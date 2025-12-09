@@ -1,21 +1,7 @@
----
-page_type: sample
-urlFragment: outlook-add-in-sso-naa
-products:
-  - m365
-  - office
-  - office-outlook
-languages:
-  - javascript
-extensions:
-  contentType: samples
-  technologies:
-    - Add-ins
-  createdDate: "03/19/2024 10:00:00 AM"
-description: "This sample shows how to implement SSO in an Outlook add-in by using nested app authentication."
----
+# Outlook add-in for reporting phishing emails
 
-# Outlook add-in with SSO using nested app authentication
+This repository is based on [Microsoft's sample code](https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/auth/Outlook-Add-in-SSO-NAA)
+for implementing an Outlook add-in with SSO using nested app authentication. 
 
 ## Summary
 
