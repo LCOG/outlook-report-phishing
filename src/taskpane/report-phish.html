@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Report Phish Outlook Add-in</title>
+    <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui. -->
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.components.min.css" />
+    <script src="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/js/fabric.min.js"></script>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <script src="https://lcogreportphish.blob.core.windows.net/report-phish-files/app.js"></script>
+    <!-- Custom styles if needed -->
+    <style type="text/css">
+    </style>
+    
+    <script>
+        Office.onReady(function (info) {
+            if (info.host === Office.HostType.Outlook) {
+                // Office is ready to interact with Outlook
+                //     document.getElementById("testButton").onclick = function () {
+                         // Show a message when button is clicked
+                //       Office.context.mailbox.item.notificationMessages.replaceAsync('status', {
+                //            type: 'informationalMessage',
+                //            icon: 'icon-16',
+                //            message: 'This is a test!'
+                //       });
+                //     };
+            }
+        });
+    </script>
+  </head>
+  <body class="ms-font-l">
+  <main>
+    <section class="ms-font-m ms-fontColor-neutralPrimary" align="center">
+        <div class="ms-Grid">
+            <div class="ms-Grid-row">
+                <div class="report-message-warning ms-MessageBar ms-MessageBar--warning">
+                    <div class="ms-MessageBar-content">
+                        <div class="ms-MessageBar-icon">
+                            <i class="ms-Icon ms-Icon--Info"></i>
+                        </div>
+                        <div class="ms-MessageBar-text">You are about to report a <strong>phishing message</strong>!<br/></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ms-Grid-row">
+                 <div class="ms-font-xxl">LCOG Report Phish</div>
+            </div>
+            <div class="ms-Grid-row">
+                <image src="https://lcogreportphish.blob.core.windows.net/report-phish-files/rp-icon-retouch-256.png" height="150"><br>
+            </div>
+            <div class="ms-Grid-row">
+                <div align="left">
+                    <div class="report-message-info ms-MessageBar ms-MessageBar--Default">
+                        <div class="ms-MessageBar-content">
+                            <div class="ms-MessageBar-icon">
+                                <i class="ms-Icon ms-Icon--Info"></i>
+                            </div>
+                            <div class="ms-MessageBar-text"><span style="font-weight:bold;">Message from LCOG Information Services:</span></div>
+                        </div>
+                    </div>
+                    <p><span style="font-style:italic;">Spam</span> refers to unsolicited and often irrelevant messages sent in bulk, typically for advertising purposes. While these messages can be a nuisance, they are generally not harmful. <br>
+                    <span style="text-decoration: underline;">Phishing</span>, on the other hand, is a malicious attempt to deceive individuals into providing sensitive information, such as passwords or credit card numbers, by impersonating a trustworthy entity.</p>
+                    <br>
+                    <p>If you believe this email is a <span style="text-decoration: underline;">phishing attempt</span> rather than spam, please select "Report Email" below.</p>
+                </div>
+            </div>
+            <div class="ms-Grid-row">
+                <form method="post" name="sender" action="#" onsubmit="event.preventDefault(); sendMail();">
+                <input type="hidden" name="thesub" id="thesub" value="">
+                <input type="hidden" name="thesent" id="thesent" value="">
+                <input type="hidden" name="therec" id="therec" value="">
+                <input type="hidden" name="thetext" id="thetext" value="">
+                <input type="hidden" name="thehtml" id="thehtml" value="">
+                <input type="hidden" name="theheaders" id="theheaders" value="">
+                <input type="hidden" name="thedom" id="thedom" value="">
+                <input type="hidden" name="theatt" id="theatt" value="">
+                <input type="hidden" name="member" value="LCOG">
+                <div class="ms-Dialog-actions">
+                    <div class="ms-Dialog-action">
+                      <button type="submit" class="ms-Dialog-action ms-Button ms-Button--primary" id="submit-action">
+                        <span class="ms-Button-label">Report Email</span>
+                      </button>
+                      <button class="ms-Dialog-action ms-Button ms-Button--secondary" id="cancel-action" onclick="Office.context.ui.closeContainer(); return false;">
+                        <span class="ms-Button-label">Cancel</span>
+                      </button>
+                    </div>
+                </div>
+                </form>
+                <!-- Debug view -->
+                <div id="emailDetails" style="display: none">
+                    <p>Subject: <span id="emailSubject"></span></p>
+                    <p>Sender: <span id="senderEmail"></span></p>
+                    <p>Recipients: <span id="recipientEmails"></span></p>
+                    <p><strong>Actual Recipient:</strong> <span id="actualRecipient"></span></p>
+                    <p>Body (Text): <span id="emailBodyText"></span></p>
+                    <p>Body (HTML): <span id="emailBodyHtml"></span></p>
+                    <p>header: <span id="emailHeaders"></span></p>
+                    <p>Attachments: <span id="attachments"></span></p>
+                </div>
+            
+            </div>
+        </div>
+    </section>
+  </main>
+</body>
+</html>
