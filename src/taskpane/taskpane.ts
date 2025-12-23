@@ -12,7 +12,6 @@ const accountManager = new AccountManager();
 const sideloadMsg = document.getElementById("sideload-msg");
 const appBody = document.getElementById("app-body");
 const getUserDataButton = document.getElementById("getUserData");
-const getUserFilesButton = document.getElementById("getUserFiles");
 const userName = document.getElementById("userName");
 const userEmail = document.getElementById("userEmail");
 
@@ -24,29 +23,11 @@ Office.onReady((info) => {
     if (getUserDataButton) {
       getUserDataButton.addEventListener("click", getUserData);
     }
-    if (getUserFilesButton) {
-      getUserFilesButton.addEventListener("click", getUserFiles);
-    }
     // Initialize MSAL.
     accountManager.initialize();
   }
 });
 
-/**
- * Writes a list of filenames into the email body.
- * @param fileNameList The list of filenames.
- */
-async function writeFileNames(fileNameList: string[]) {
-  const item = Office.context.mailbox.item;
-  let fileNameBody: string = "";
-  fileNameList.map((fileName) => (fileNameBody += "<br/>" + fileName));
-
-  if (item) {
-    item.body.setAsync(fileNameBody, {
-      coercionType: "html",
-    });
-  }
-}
 
 /**
  * Gets the user data such as name and email and displays it
@@ -68,34 +49,4 @@ async function getUserData() {
   if (userEmail) {
     userEmail.innerText = response.mail ?? "";
   }
-}
-
-/**
- * Gets the first 10 item names (files or folders) from the user's OneDrive.
- * Inserts the item names into the document.
- */
-async function getUserFiles() {
-  try {
-    const names = await getFileNames(10);
-
-    writeFileNames(names);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-/**
- * Gets item names (files or folders) from the user's OneDrive.
- */
-async function getFileNames(count = 10) {
-  // Specify minimum scopes for the token needed.
-  const accessToken = await accountManager.ssoGetAccessToken(["Files.Read"]);
-  const response: { value: { name: string }[] } = await makeGraphRequest(
-    accessToken,
-    "/me/drive/root/children",
-    `?$select=name&$top=${count}`
-  );
-
-  const names = response.value.map((item: { name: string }) => item.name);
-  return names;
 }
