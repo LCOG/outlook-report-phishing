@@ -12,6 +12,7 @@ const accountManager = new AccountManager();
 const sideloadMsg = document.getElementById("sideload-msg");
 const appBody = document.getElementById("app-body");
 const getUserDataButton = document.getElementById("getUserData");
+const reportEmailButton = document.getElementById("reportPhishingEmail");
 const userName = document.getElementById("userName");
 const userEmail = document.getElementById("userEmail");
 
@@ -23,11 +24,13 @@ Office.onReady((info) => {
     if (getUserDataButton) {
       getUserDataButton.addEventListener("click", getUserData);
     }
+    if (reportEmailButton) {
+      reportEmailButton.addEventListener("click", reportPhishingEmail);
+    }
     // Initialize MSAL.
     accountManager.initialize();
   }
 });
-
 
 /**
  * Gets the user data such as name and email and displays it
@@ -52,5 +55,27 @@ async function getUserData() {
   }
   if (userEmail) {
     userEmail.innerText = response.mail ?? "";
+  }
+}
+
+async function reportPhishingEmail() {
+  // const apiUrl = "http://localhost:8000/api/v1/phishreport";
+  const apiUrl = "https://api.team.lcog.org/api/v1/phishreport";
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        employee_email: "dwilson@lcog.org",
+        email_message: '{subject: "Test from development add-in", body: "This is a fake email"}',
+      }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+  } catch (error) {
+    console.error(error.message);
   }
 }
