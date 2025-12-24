@@ -38,7 +38,11 @@ async function getUserData() {
   // Specify minimum scopes for the token needed.
   const accessToken = await accountManager.ssoGetAccessToken(["user.read"]);
 
-  const response: { displayName: string; mail: string } = await makeGraphRequest(accessToken, "/me", "");
+  const response: { displayName: string; mail: string } = await makeGraphRequest(
+    accessToken,
+    "/me",
+    ""
+  );
 
   if (userDataElement) {
     userDataElement.style.visibility = "visible";
