@@ -6,7 +6,7 @@
 /* global document, Office, console */
 
 import { AccountManager } from "./authConfig";
-import { makeGraphRequest } from "./msgraph-helper";
+import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
 
 const accountManager = new AccountManager();
 const sideloadMsg = document.getElementById("sideload-msg");
@@ -41,11 +41,10 @@ async function getUserData() {
   // Specify minimum scopes for the token needed.
   const accessToken = await accountManager.ssoGetAccessToken(["user.read"]);
 
-  const response: { displayName: string; mail: string } = await makeGraphRequest(
+  const response: { displayName: string; mail: string } = await makeGraphRequest({
     accessToken,
-    "/me",
-    ""
-  );
+    path: "/me",
+  });
 
   if (userDataElement) {
     userDataElement.style.visibility = "visible";
@@ -58,7 +57,8 @@ async function getUserData() {
   }
 }
 
-async function reportPhishingEmail() {
+async function logPhishingAttempt(message) {
+  console.log(`Got message: ${message.value}`);
   // const apiUrl = "http://localhost:8000/api/v1/phishreport";
   const apiUrl = "https://api.team.lcog.org/api/v1/phishreport";
   try {
@@ -69,7 +69,7 @@ async function reportPhishingEmail() {
       },
       body: JSON.stringify({
         employee_email: "dwilson@lcog.org",
-        email_message: '{subject: "Test from development add-in", body: "This is a fake email"}',
+        email_message: message.value,
       }),
     });
 
@@ -78,4 +78,59 @@ async function reportPhishingEmail() {
   } catch (error) {
     console.error(error.message);
   }
+}
+
+async function reportPhishingEmail() {
+  // Get access token for forwarding the email via Graph API
+  const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
+
+  // The type of Office.context.mailbox.item can vary depending on the context
+  // so we explicitly assign the expected type here.
+  // TODO: Note that this is a suspected phishing email, and any links and
+  // attachments on it need to be treated as malicious.
+  // Research best practices on handling such emails.
+  const msg: Office.MessageRead | undefined = Office.context.mailbox.item;
+
+  // TODO: display failure to retrieve the current email in the UI
+  if (typeof msg === undefined) {
+    console.error("Failed to retrieve current email from Office context.");
+    return;
+  }
+
+  // Get the current email subject and body via Graph API and send it to
+  // Team App phishing report endpoint.
+  await makeGraphRequest({
+    accessToken: accessToken,
+    path: `/me/messages/${msg?.itemId}`,
+    queryParams: "?$select=subject,body",
+    additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
+  })
+    .then((currentMessageBody) => logPhishingAttempt(currentMessageBody))
+    .catch((reject) => console.error(reject));
+
+  // Set body for the forwarding request
+  const forwardBody = {
+    comment: "Message forwarded from LCOG Report Phish add-in",
+    toRecipients: [
+      {
+        emailAddress: {
+          name: "Sampo Savolainen",
+          address: "ssavolainen@lcog-or.gov",
+        },
+      },
+    ],
+  };
+
+  // Forward the current email to specified LCOG IT inbox via Graph API
+  await makePostGraphRequest({
+    accessToken,
+    path: `/me/messages/${msg?.itemId}/forward`,
+    additionalHeaders: { "Content-Type": "application/json" },
+    body: JSON.stringify(forwardBody),
+  });
+
+  // TODO: move email to junk folder after forwarding
+  // Is any other cleanup needed?
+
+  // logPhishingAttempt(msg);
 }
