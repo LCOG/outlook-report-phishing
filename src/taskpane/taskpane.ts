@@ -161,6 +161,10 @@ async function reportPhishingEmail() {
 
   // TODO: move email to junk folder after forwarding
   // Is any other cleanup needed?
-
-  // logPhishingAttempt(msg);
+  await makePostGraphRequest({
+    accessToken,
+    path: `/me/messages/${msg?.itemId}/move`,
+    additionalHeaders: { "Content-Type": "application/json" },
+    body: JSON.stringify({ destinationId: "junkemail" }),
+  });
 }
