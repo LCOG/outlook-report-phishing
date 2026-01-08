@@ -73,4 +73,6 @@ export async function makePostGraphRequest({
     headers: headers,
     body: body,
   });
+
+  return response;
 }

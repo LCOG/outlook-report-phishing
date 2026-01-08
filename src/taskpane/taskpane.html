@@ -72,6 +72,12 @@
       <br />
       <!--TODO: add element for displaying the result state of clicking the
       report button  -->
+      <div id="reportingSuccess" style="visibility: hidden">
+        <label>Email has been reported to LCOG IT and moved to the <b>Junk Email</b> folder.</label>
+      </div>
+      <div id="reportingError" style="visibility: hidden">
+        <label>Reporting the email failed:</label><br /><label id="reportingErrorMessage"></label>
+      </div>
       <button class="Button Button--primary" style="visibility: hidden" id="signOutButton">
         <span class="Button-icon"><i class="ms-Icon ms-Icon--plus"></i></span>
         <span class="Button-label">Sign out</span>

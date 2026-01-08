@@ -15,6 +15,9 @@ const getUserDataButton = document.getElementById("getUserData");
 const reportEmailButton = document.getElementById("reportPhishingEmail");
 const userName = document.getElementById("userName");
 const userEmail = document.getElementById("userEmail");
+const reportingSuccess = document.getElementById("reportingSuccess");
+const reportingError = document.getElementById("reportingError");
+const reportingErrorMessage = document.getElementById("reportingErrorMessage");
 
 // Initialize when Office is ready.
 Office.onReady((info) => {
@@ -55,12 +58,29 @@ async function getUserData() {
   if (userEmail) {
     userEmail.innerText = response.mail ?? "";
   }
+
+  return response;
 }
 
-async function logPhishingAttempt(message) {
-  console.log(`Got message: ${message.value}`);
-  // const apiUrl = "http://localhost:8000/api/v1/phishreport";
-  const apiUrl = "https://api.team.lcog.org/api/v1/phishreport";
+function displaySuccess() {
+  if (reportingSuccess) {
+    reportingSuccess.style.visibility = "visible";
+  }
+}
+
+function displayError(errorMessage) {
+  if (reportingError) {
+    reportingError.style.visibility = "visible";
+  }
+  if (reportingErrorMessage) {
+    reportingErrorMessage.innerText = errorMessage ?? "Something went wrong";
+  }
+}
+
+async function logPhishingReport(emailAddress, message) {
+  console.log("Got message:");
+  console.log(message.body);
+
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
@@ -122,12 +142,19 @@ async function reportPhishingEmail() {
   };
 
   // Forward the current email to specified LCOG IT inbox via Graph API
-  await makePostGraphRequest({
+  const forwardResult = await makePostGraphRequest({
     accessToken,
     path: `/me/messages/${msg?.itemId}/forward`,
     additionalHeaders: { "Content-Type": "application/json" },
     body: JSON.stringify(forwardBody),
   });
+
+  if (forwardResult.ok) {
+    displaySuccess();
+  } else {
+    console.error(forwardResult);
+    displayError(`HTTP ${forwardResult.status} ${forwardResult.statusText}`);
+  }
 
   // TODO: move email to junk folder after forwarding
   // Is any other cleanup needed?
