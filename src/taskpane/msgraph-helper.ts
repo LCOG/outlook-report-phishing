@@ -44,6 +44,7 @@ export async function makeGraphRequest({
 
   if (response.ok) {
     const data = await response.json();
+    console.log("printing data from msgraph-helper:");
     console.log(data);
     return data;
   } else {
