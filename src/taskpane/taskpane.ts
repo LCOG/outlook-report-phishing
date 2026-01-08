@@ -88,7 +88,7 @@ async function logPhishingReport(emailAddress, message) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        employee_email: emailAddress,
+        employee_email: emailAddress.toLowerCase(),
         email_message: message.body.content,
       }),
     });
