@@ -82,14 +82,14 @@ async function logPhishingReport(emailAddress, message) {
   console.log(message.body);
 
   try {
-    const response = await fetch(apiUrl, {
+    const response = await fetch("http://localhost:8000/api/v1/phishreport", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        employee_email: "dwilson@lcog.org",
-        email_message: message.value,
+        employee_email: emailAddress,
+        email_message: message.body.content,
       }),
     });
 
@@ -111,11 +111,14 @@ async function reportPhishingEmail() {
   // Research best practices on handling such emails.
   const msg: Office.MessageRead | undefined = Office.context.mailbox.item;
 
+  console.log(msg);
   // TODO: display failure to retrieve the current email in the UI
   if (typeof msg === undefined) {
     console.error("Failed to retrieve current email from Office context.");
     return;
   }
+
+  const { displayName, mail } = await getUserData();
 
   // Get the current email subject and body via Graph API and send it to
   // Team App phishing report endpoint.
@@ -125,16 +128,16 @@ async function reportPhishingEmail() {
     queryParams: "?$select=subject,body",
     additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
   })
-    .then((currentMessageBody) => logPhishingAttempt(currentMessageBody))
+    .then((currentMessageBody) => logPhishingReport(mail, currentMessageBody))
     .catch((reject) => console.error(reject));
 
   // Set body for the forwarding request
   const forwardBody = {
-    comment: "Message forwarded from LCOG Report Phish add-in",
+    comment: `${displayName} forwarded a suspicious email via the Report Phish add-in:`,
     toRecipients: [
       {
         emailAddress: {
-          name: "Sampo Savolainen",
+          name: "LCOG IT",
           address: "ssavolainen@lcog-or.gov",
         },
       },
