@@ -69,7 +69,7 @@ export async function makePostGraphRequest({
   const headers = new Headers(additionalHeaders);
   headers.set("Authorization", accessToken);
 
-  await fetch(`https://graph.microsoft.com/v1.0${path}`, {
+  const response = await fetch(`https://graph.microsoft.com/v1.0${path}`, {
     method: "POST",
     headers: headers,
     body: body,
