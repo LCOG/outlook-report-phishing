@@ -8,6 +8,10 @@
 import { AccountManager } from "./authConfig";
 import { makeGraphRequest } from "./msgraph-helper";
 
+import { provideFluentDesignSystem, fluentButton, fluentDivider } from "@fluentui/web-components";
+
+provideFluentDesignSystem().register(fluentButton(), fluentDivider());
+
 const accountManager = new AccountManager();
 const sideloadMsg = document.getElementById("sideload-msg");
 const appBody = document.getElementById("app-body");

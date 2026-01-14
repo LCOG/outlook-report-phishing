@@ -1,1 +1,101 @@
-<!doctype html><html><head><meta charset="UTF-8"/><meta http-equiv="X-UA-Compatible" content="IE=Edge"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Contoso Task Pane Add-in</title><script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script><link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/><link href="24477b26611d6c45fc13.css" rel="stylesheet"/><link href="1fda685b81e1123773f6.css" rel="stylesheet"/><script defer="defer" src="polyfill.js"></script><script defer="defer" src="taskpane.js"></script></head><body class="ms-font-m ms-welcome ms-Fabric"><header class="ms-welcome__header ms-bgColor-neutralLighter"><img width="90" height="90" src="assets/logo-filled.png" alt="Contoso" title="Contoso"/><h1 class="ms-font-su">Welcome</h1></header><section id="sideload-msg" class="ms-welcome__main"><h2 class="ms-font-xl">Please <a target="_blank" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">sideload</a> your add-in to see app body.</h2></section><main id="app-body" class="ms-welcome__main" style="display:none"><h2 class="ms-font-xl">SSO with nested app authentication</h2><p class="ms-font-l">This add-in demonstrates how to connect to Microsoft Graph from an add-in.</p><button class="Button Button--primary" id="getUserData"><span class="Button-icon"><i class="ms-Icon ms-Icon--plus"></i></span> <span class="Button-label">Get user data</span> <span class="Button-description">Gets the user's name and email.</span></button><br/><div id="userData" style="visibility:hidden"><label>Name:</label><label id="userName"></label><br/><label>Email:</label><label id="userEmail"></label></div><br/><button class="Button Button--primary" id="getUserFiles"><span class="Button-icon"><i class="ms-Icon ms-Icon--plus"></i></span> <span class="Button-label">Get user files</span> <span class="Button-description">Gets the first 10 items from the user's OneDrive and inserts them in the document.</span></button> <button class="Button Button--primary" style="visibility:hidden" id="signOutButton"><span class="Button-icon"><i class="ms-Icon ms-Icon--plus"></i></span> <span class="Button-label">Sign out</span> <span class="Button-description">Sign out of your user account.</span></button><p><label id="item-subject"></label></p></main></body></html>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
+<!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contoso Task Pane Add-in</title>
+
+    <!-- Office JavaScript API -->
+    <script
+      type="text/javascript"
+      src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"
+    ></script>
+
+    <!-- Template styles -->
+    <link href="taskpane.css" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body class="ms-welcome">
+    <header class="ms-welcome__header">
+      <img
+        width="90"
+        height="90"
+        src="../../assets/logo-filled.png"
+        alt="Contoso"
+        title="Contoso"
+      />
+      <h1 class="ms-font-su">Welcome</h1>
+    </header>
+    <section id="sideload-msg" class="ms-welcome__main">
+      <h2 class="ms-font-xl">
+        Please
+        <a
+          rel="noopener noreferrer"
+          target="_blank"
+          href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing"
+          >sideload</a
+        >
+        your add-in to see app body.
+      </h2>
+    </section>
+    <main id="app-body" class="ms-welcome__main" style="display: none">
+      <h2 class="ms-font-xl">SSO with nested app authentication</h2>
+      <p class="ms-font-l">
+        This add-in demonstrates how to connect to Microsoft Graph from an add-in.
+      </p>
+
+      <fluent-button appearance="accent" id="getUserData">
+        <svg
+          slot="start"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M8 3V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        Get user data
+      </fluent-button>
+      <p class="ms-font-s">Gets the user's name and email.</p>
+
+      <fluent-divider></fluent-divider>
+      <br />
+
+      <div id="userData" style="visibility: hidden">
+        <label>Name: </label><span id="userName"></span><br />
+        <label>Email: </label><span id="userEmail"></span>
+      </div>
+      <br />
+
+      <fluent-button appearance="accent" id="getUserFiles">
+        <svg
+          slot="start"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M8 3V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        Get user files
+      </fluent-button>
+      <p class="ms-font-s">
+        Gets the first 10 items from the user's OneDrive and inserts them in the document.
+      </p>
+
+      <fluent-button appearance="stealth" style="visibility: hidden" id="signOutButton">
+        Sign out
+      </fluent-button>
+      <p><label id="item-subject"></label></p>
+    </main>
+  </body>
+</html>
+
