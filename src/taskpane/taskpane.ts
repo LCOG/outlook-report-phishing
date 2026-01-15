@@ -8,6 +8,8 @@
 import { AccountManager } from "./authConfig";
 import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
 
+import "dotenv/config";
+
 import {
   provideFluentDesignSystem,
   fluentButton,
@@ -24,6 +26,9 @@ provideFluentDesignSystem().register(
   fluentRadioGroup(),
   fluentTooltip()
 );
+
+const reportPhishApiUrl = process.env.API_URL;
+const forwardEmail = process.env.FORWARD_TO;
 
 const accountManager = new AccountManager();
 const sideloadMsg = document.getElementById("sideload-msg");
@@ -99,7 +104,7 @@ async function logPhishingReport(emailAddress, message) {
   console.log(message.body);
 
   try {
-    const response = await fetch("http://localhost:8000/api/v1/phishreport", {
+    const response = await fetch(reportPhishApiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +160,7 @@ async function reportPhishingEmail() {
       {
         emailAddress: {
           name: "LCOG IT",
-          address: "ssavolainen@lcog-or.gov",
+          address: forwardEmail,
         },
       },
     ],

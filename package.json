@@ -31,6 +31,7 @@
     "@azure/msal-browser": "^3.26.1",
     "@fluentui/web-components": "^2.6.1",
     "core-js": "^3.38.1",
+    "dotenv": "^17.2.3",
     "regenerator-runtime": "^0.14.1"
   },
   "devDependencies": {
