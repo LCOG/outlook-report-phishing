@@ -8,9 +8,22 @@
 import { AccountManager } from "./authConfig";
 import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
 
-import { provideFluentDesignSystem, fluentButton, fluentDivider } from "@fluentui/web-components";
+import {
+  provideFluentDesignSystem,
+  fluentButton,
+  fluentDivider,
+  fluentRadio,
+  fluentRadioGroup,
+  fluentTooltip,
+} from "@fluentui/web-components";
 
-provideFluentDesignSystem().register(fluentButton(), fluentDivider());
+provideFluentDesignSystem().register(
+  fluentButton(),
+  fluentDivider(),
+  fluentRadio(),
+  fluentRadioGroup(),
+  fluentTooltip()
+);
 
 const accountManager = new AccountManager();
 const sideloadMsg = document.getElementById("sideload-msg");

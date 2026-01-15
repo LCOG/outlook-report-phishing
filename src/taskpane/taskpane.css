@@ -73,13 +73,21 @@ body {
 }
 
 fluent-button {
-  margin: 8px 0;
-  width: 200px;
+  margin: 0.5em;
+  width: auto;
 }
 
 fluent-divider {
   width: 100%;
   margin: 20px 0;
+}
+
+fluent-radio {
+  margin: 0.25em;
+}
+
+fluent-radio-group {
+  margin: 0.5em;
 }
 
 #userData {
