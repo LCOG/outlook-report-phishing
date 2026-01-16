@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+coverage
+
+# Office Add-in specific
+assets
+public
+manifest-configurations
+
+# Config files that shouldn't be reformatted
+package-lock.json
+*.min.js
+*.bundle.js
+
+# IDE
+.vscode
+.idea
