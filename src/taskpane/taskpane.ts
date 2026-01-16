@@ -8,8 +8,6 @@
 import { AccountManager } from "./authConfig";
 import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
 
-import "dotenv/config";
-
 import {
   provideFluentDesignSystem,
   fluentButton,
