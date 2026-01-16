@@ -129,22 +129,32 @@ async function reportPhishingEmail() {
   // TODO: Note that this is a suspected phishing email, and any links and
   // attachments on it need to be treated as malicious.
   // Research best practices on handling such emails.
-  const msg: Office.MessageRead | undefined = Office.context.mailbox.item;
+  const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
 
-  console.log(msg);
-  // TODO: display failure to retrieve the current email in the UI
-  if (typeof msg === undefined) {
+  if (!msg.itemId) {
     console.error("Failed to retrieve current email from Office context.");
     return;
   }
 
+  const msgId = Office.context.mailbox.convertToRestId(
+    msg.itemId,
+    Office.MailboxEnums.RestVersion.v2_0
+  );
+  console.log("Message ID from Office.js API:");
+  console.log(msgId);
+
   const { displayName, mail } = await getUserData();
+
+  console.log("User email:");
+  console.log(mail);
+  console.log("User name:");
+  console.log(displayName);
 
   // Get the current email subject and body via Graph API and send it to
   // Team App phishing report endpoint.
   await makeGraphRequest({
     accessToken: accessToken,
-    path: `/me/messages/${msg?.itemId}`,
+    path: `/me/messages/${msgId}`,
     queryParams: "?$select=subject,body",
     additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
   })
@@ -167,7 +177,7 @@ async function reportPhishingEmail() {
   // Forward the current email to specified LCOG IT inbox via Graph API
   const forwardResult = await makePostGraphRequest({
     accessToken,
-    path: `/me/messages/${msg?.itemId}/forward`,
+    path: `/me/messages/${msgId}/forward`,
     additionalHeaders: { "Content-Type": "application/json" },
     body: JSON.stringify(forwardBody),
   });
@@ -183,7 +193,7 @@ async function reportPhishingEmail() {
   // Is any other cleanup needed?
   await makePostGraphRequest({
     accessToken,
-    path: `/me/messages/${msg?.itemId}/move`,
+    path: `/me/messages/${msgId}/move`,
     additionalHeaders: { "Content-Type": "application/json" },
     body: JSON.stringify({ destinationId: "junkemail" }),
   });
