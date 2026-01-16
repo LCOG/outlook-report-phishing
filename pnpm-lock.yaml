@@ -27,6 +27,12 @@ importers:
       '@babel/preset-typescript':
         specifier: ^7.24.7
         version: 7.28.5(@babel/core@7.28.6)
+      '@eslint/eslintrc':
+        specifier: ^3.3.3
+        version: 3.3.3
+      '@eslint/js':
+        specifier: ^9.39.2
+        version: 9.39.2
       '@types/office-js':
         specifier: ^1.0.441
         version: 1.0.568
@@ -51,6 +57,9 @@ importers:
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.104.1)
+      globals:
+        specifier: ^17.0.0
+        version: 17.0.0
       html-loader:
         specifier: ^5.1.0
         version: 5.1.0(webpack@5.104.1)
@@ -2220,6 +2229,10 @@ packages:
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
+    engines: {node: '>=18'}
+
+  globals@17.0.0:
+    resolution: {integrity: sha512-gv5BeD2EssA793rlFWVPMMCqefTlpusw6/2TbAVMy0FzcG8wKJn4O+NqJ4+XWmmwrayJgw5TzrmWjFgmz1XPqw==}
     engines: {node: '>=18'}
 
   globalthis@1.0.4:
@@ -7076,6 +7089,8 @@ snapshots:
       type-fest: 0.20.2
 
   globals@14.0.0: {}
+
+  globals@17.0.0: {}
 
   globalthis@1.0.4:
     dependencies:
