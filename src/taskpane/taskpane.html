@@ -1,7 +1,7 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
 <!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-us">
   <head>
     <meta charset="UTF-8" />
@@ -36,10 +36,15 @@
       <h2 class="ms-font-xl">LCOG Report Phish [Development Version]</h2>
       <fluent-divider></fluent-divider>
       <p class="ms-font-l">This email is:</p>
-      <fluent-radio-group orientation="vertical">
-        <fluent-radio>Phishing</fluent-radio>
-        <fluent-radio>Spam</fluent-radio>
-        <fluent-radio>Other</fluent-radio>
+      <fluent-radio-group
+        id="reportMessageTypeGroup"
+        orientation="vertical"
+        name="reportMessageType"
+        value="phishing"
+      >
+        <fluent-radio value="phishing">Phishing</fluent-radio>
+        <fluent-radio value="spam">Spam</fluent-radio>
+        <fluent-radio value="other">Other</fluent-radio>
       </fluent-radio-group>
       <fluent-button
         appearance="accent"

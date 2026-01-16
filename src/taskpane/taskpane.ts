@@ -41,6 +41,7 @@ const userEmail = document.getElementById("userEmail");
 const reportingSuccess = document.getElementById("reportingSuccess");
 const reportingError = document.getElementById("reportingError");
 const reportingErrorMessage = document.getElementById("reportingErrorMessage");
+const reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup") as any;
 
 // Initialize when Office is ready.
 Office.onReady((info) => {
@@ -165,8 +166,9 @@ async function reportPhishingEmail() {
     .catch((reject) => console.error(reject));
 
   // Set body for the forwarding request
+  const reportType = reportMessageTypeGroup ? reportMessageTypeGroup.value : "unknown";
   const forwardBody = {
-    comment: `${displayName} forwarded a suspicious email via the Report Phish add-in:`,
+    comment: `${displayName} forwarded a suspicious email (type: ${reportType}) via the Report Phish add-in:`,
     toRecipients: [
       {
         emailAddress: {
