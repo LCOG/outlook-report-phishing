@@ -95,6 +95,15 @@ fluent-text-area {
   width: 100%;
 }
 
+fluent-tooltip {
+  width: max-content;
+}
+
+fluent-tooltip::part(tooltip) {
+  max-width: 65vw;
+  text-wrap: balance;
+}
+
 #userData {
   width: 100%;
   padding: 10px;
