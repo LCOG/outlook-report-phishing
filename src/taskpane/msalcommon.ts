@@ -8,6 +8,7 @@ import {
   type IPublicClientApplication,
   type RedirectRequest,
 } from "@azure/msal-browser";
+
 import { msalConfig } from "./msalconfig";
 
 /**

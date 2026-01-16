@@ -10,9 +10,10 @@ import {
   createNestablePublicClientApplication,
   type IPublicClientApplication,
 } from "@azure/msal-browser";
+
+import { getTokenRequest } from "./msalcommon";
 import { msalConfig } from "./msalconfig";
 import { createLocalUrl } from "./util";
-import { getTokenRequest } from "./msalcommon";
 
 export type AuthDialogResult = {
   accessToken?: string;
@@ -56,7 +57,7 @@ export class AccountManager {
     if (!this.isNestedAppAuthSupported() && this.pca.getActiveAccount()) {
       this.setSignOutButtonVisibility(true);
     }
-    this.getSignOutButton()?.addEventListener("click", () => this.signOut());
+    this.getSignOutButton()?.addEventListener("click", async () => this.signOut());
   }
 
   private async signOut() {
@@ -161,7 +162,7 @@ export class AccountManager {
     return this._dialogApiResult;
   }
 
-  signOutWithDialogApi(): Promise<void> {
+  async signOutWithDialogApi(): Promise<void> {
     return new Promise((resolve) => {
       Office.context.ui.displayDialogAsync(
         createLocalUrl(`dialog.html?logout=1`),

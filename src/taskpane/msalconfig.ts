@@ -4,6 +4,7 @@
 // This file provides the default MSAL configuration for the add-in project.
 
 import { LogLevel } from "@azure/msal-browser";
+
 import { createLocalUrl } from "./util";
 
 /* global console */

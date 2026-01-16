@@ -5,15 +5,14 @@
 
 /* global Office, window, URLSearchParams */
 
-import {
-  AuthenticationResult,
-  createStandardPublicClientApplication,
-  IPublicClientApplication,
-} from "@azure/msal-browser";
+import { createStandardPublicClientApplication } from "@azure/msal-browser";
+
 import { getTokenRequest } from "../msalcommon";
-import { createLocalUrl } from "../util";
 import { defaultScopes, msalConfig } from "../msalconfig";
+import { createLocalUrl } from "../util";
+
 import type { AuthDialogResult } from "../authConfig";
+import type { AuthenticationResult, IPublicClientApplication } from "@azure/msal-browser";
 
 // read querystring parameter
 function getQueryParameter(param: string) {
