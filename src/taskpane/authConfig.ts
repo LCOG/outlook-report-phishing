@@ -124,29 +124,39 @@ export class AccountManager {
    */
   async getTokenWithDialogApi(): Promise<string> {
     this._dialogApiResult = new Promise((resolve, reject) => {
-      Office.context.ui.displayDialogAsync(createLocalUrl(`dialog.html`), { height: 60, width: 30 }, (result) => {
-        result.value.addEventHandler(Office.EventType.DialogEventReceived, (arg: DialogEventArg) => {
-          const errorArg = arg as DialogEventError;
-          if (errorArg.error == 12006) {
-            this._dialogApiResult = null;
-            reject("Dialog closed");
-          }
-        });
-        result.value.addEventHandler(Office.EventType.DialogMessageReceived, (arg: DialogEventArg) => {
-          const messageArg = arg as DialogEventMessage;
-          const parsedMessage = JSON.parse(messageArg.message);
-          result.value.close();
+      Office.context.ui.displayDialogAsync(
+        createLocalUrl(`dialog.html`),
+        { height: 60, width: 30 },
+        (result) => {
+          result.value.addEventHandler(
+            Office.EventType.DialogEventReceived,
+            (arg: DialogEventArg) => {
+              const errorArg = arg as DialogEventError;
+              if (errorArg.error == 12006) {
+                this._dialogApiResult = null;
+                reject("Dialog closed");
+              }
+            }
+          );
+          result.value.addEventHandler(
+            Office.EventType.DialogMessageReceived,
+            (arg: DialogEventArg) => {
+              const messageArg = arg as DialogEventMessage;
+              const parsedMessage = JSON.parse(messageArg.message);
+              result.value.close();
 
-          if (parsedMessage.error) {
-            reject(parsedMessage.error);
-            this._dialogApiResult = null;
-          } else {
-            resolve(parsedMessage.accessToken);
-            this.setSignOutButtonVisibility(true);
-            this._usingFallbackDialog = true;
-          }
-        });
-      });
+              if (parsedMessage.error) {
+                reject(parsedMessage.error);
+                this._dialogApiResult = null;
+              } else {
+                resolve(parsedMessage.accessToken);
+                this.setSignOutButtonVisibility(true);
+                this._usingFallbackDialog = true;
+              }
+            }
+          );
+        }
+      );
     });
     return this._dialogApiResult;
   }

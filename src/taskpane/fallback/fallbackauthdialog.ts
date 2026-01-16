@@ -25,7 +25,10 @@ async function sendDialogMessage(message: string) {
   await Office.onReady();
   Office.context.ui.messageParent(message);
 }
-async function returnResult(publicClientApp: IPublicClientApplication, authResult: AuthenticationResult) {
+async function returnResult(
+  publicClientApp: IPublicClientApplication,
+  authResult: AuthenticationResult
+) {
   publicClientApp.setActiveAccount(authResult.account);
 
   const authDialogResult: AuthDialogResult = {
@@ -40,7 +43,9 @@ export async function initializeMsal() {
   const publicClientApp = await createStandardPublicClientApplication(msalConfig);
   try {
     if (getQueryParameter("logout") === "1") {
-      await publicClientApp.logoutRedirect({ postLogoutRedirectUri: createLocalUrl("dialog.html?close=1") });
+      await publicClientApp.logoutRedirect({
+        postLogoutRedirectUri: createLocalUrl("dialog.html?close=1"),
+      });
       return;
     } else if (getQueryParameter("close") === "1") {
       sendDialogMessage("close");
@@ -61,7 +66,9 @@ export async function initializeMsal() {
 
   try {
     if (publicClientApp.getActiveAccount()) {
-      const result = await publicClientApp.acquireTokenSilent(getTokenRequest(defaultScopes, false));
+      const result = await publicClientApp.acquireTokenSilent(
+        getTokenRequest(defaultScopes, false)
+      );
       if (result) {
         return returnResult(publicClientApp, result);
       }
@@ -70,7 +77,9 @@ export async function initializeMsal() {
     /* empty */
   }
 
-  publicClientApp.acquireTokenRedirect(getTokenRequest(defaultScopes, true, createLocalUrl("dialog.html")));
+  publicClientApp.acquireTokenRedirect(
+    getTokenRequest(defaultScopes, true, createLocalUrl("dialog.html"))
+  );
 }
 
 initializeMsal();
