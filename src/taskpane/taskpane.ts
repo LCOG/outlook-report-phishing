@@ -17,6 +17,9 @@ import {
   fluentTooltip,
 } from "@fluentui/web-components";
 
+import { AccountManager } from "./authConfig";
+import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
+
 provideFluentDesignSystem().register(
   fluentButton(),
   fluentDivider(),
@@ -158,7 +161,7 @@ async function reportPhishingEmail() {
     queryParams: "?$select=subject,body",
     additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
   })
-    .then((currentMessageBody) => logPhishingReport(mail, currentMessageBody))
+    .then(async (currentMessageBody) => logPhishingReport(mail, currentMessageBody))
     .catch((reject) => console.error(reject));
 
   // Set body for the forwarding request
