@@ -90,6 +90,11 @@ fluent-radio-group {
   margin: 0.5em;
 }
 
+fluent-text-area {
+  margin: 0.5em;
+  width: 100%;
+}
+
 #userData {
   width: 100%;
   padding: 10px;

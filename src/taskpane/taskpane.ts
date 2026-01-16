@@ -14,6 +14,7 @@ import {
   fluentDivider,
   fluentRadio,
   fluentRadioGroup,
+  fluentTextArea,
   fluentTooltip,
 } from "@fluentui/web-components";
 
@@ -25,6 +26,7 @@ provideFluentDesignSystem().register(
   fluentDivider(),
   fluentRadio(),
   fluentRadioGroup(),
+  fluentTextArea(),
   fluentTooltip()
 );
 
@@ -42,6 +44,7 @@ const reportingSuccess = document.getElementById("reportingSuccess");
 const reportingError = document.getElementById("reportingError");
 const reportingErrorMessage = document.getElementById("reportingErrorMessage");
 const reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup") as any;
+const additionalInfoArea = document.getElementById("additionalInfo") as any;
 
 // Initialize when Office is ready.
 Office.onReady((info) => {
@@ -167,8 +170,11 @@ async function reportPhishingEmail() {
 
   // Set body for the forwarding request
   const reportType = reportMessageTypeGroup ? reportMessageTypeGroup.value : "unknown";
+  const additionalInfo = additionalInfoArea ? additionalInfoArea.value : "";
+  const forwardComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in. ${additionalInfo ? `\n\nAdditional details: ${additionalInfo}` : ""}`;
+
   const forwardBody = {
-    comment: `${displayName} forwarded a suspicious email (type: ${reportType}) via the Report Phish add-in:`,
+    comment: forwardComment,
     toRecipients: [
       {
         emailAddress: {
