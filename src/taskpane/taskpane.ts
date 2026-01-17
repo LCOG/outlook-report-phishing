@@ -45,6 +45,7 @@ const reportingError = document.getElementById("reportingError");
 const reportingErrorMessage = document.getElementById("reportingErrorMessage");
 const reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup") as any;
 const additionalInfoArea = document.getElementById("additionalInfo") as any;
+const moveToJunkButton = document.getElementById("moveToJunkButton");
 
 // Initialize when Office is ready.
 Office.onReady((info) => {
@@ -56,6 +57,9 @@ Office.onReady((info) => {
     }
     if (reportEmailButton) {
       reportEmailButton.addEventListener("click", reportPhishingEmail);
+    }
+    if (moveToJunkButton) {
+      moveToJunkButton.addEventListener("click", moveToJunk);
     }
     // Initialize MSAL.
     accountManager.initialize();
@@ -92,6 +96,9 @@ async function getUserData() {
 function displaySuccess() {
   if (reportingSuccess) {
     reportingSuccess.style.visibility = "visible";
+  }
+  if (moveToJunkButton) {
+    moveToJunkButton.style.visibility = "visible";
   }
 }
 
@@ -199,13 +206,34 @@ async function reportPhishingEmail() {
     console.error(forwardResult);
     displayError(`HTTP ${forwardResult.status} ${forwardResult.statusText}`);
   }
+}
 
-  // TODO: move email to junk folder after forwarding
-  // Is any other cleanup needed?
-  await makePostGraphRequest({
+async function moveToJunk() {
+  const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
+  const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
+
+  if (!msg.itemId) {
+    console.error("Failed to retrieve current email from Office context.");
+    return;
+  }
+
+  const msgId = Office.context.mailbox.convertToRestId(
+    msg.itemId,
+    Office.MailboxEnums.RestVersion.v2_0
+  );
+
+  // Move email to junk folder
+  const response = await makePostGraphRequest({
     accessToken,
     path: `/me/messages/${msgId}/move`,
     additionalHeaders: { "Content-Type": "application/json" },
     body: JSON.stringify({ destinationId: "junkemail" }),
   });
+
+  if (response.ok) {
+    Office.context.ui.closeContainer();
+  } else {
+    console.error(response);
+    displayError(`Failed to move email: ${response.status} ${response.statusText}`);
+  }
 }

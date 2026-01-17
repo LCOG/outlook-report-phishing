@@ -49,7 +49,7 @@
       <fluent-text-area
         id="additionalInfo"
         appearance="outline"
-        placeholder="(Optional) Tell us more about this email..."
+        placeholder="(Optional) Tell us more about this email"
       >
       </fluent-text-area>
       <fluent-button
@@ -65,20 +65,20 @@
       <!--TODO: add element for displaying the result state of clicking the
       report button  -->
       <div id="reportingSuccess" style="visibility: hidden">
-        <label>Email has been reported to LCOG IT and moved to the <b>Junk Email</b> folder.</label>
+        <label>Email has been reported to Service Desk.</label>
       </div>
       <div id="reportingError" style="visibility: hidden">
         <label>Reporting the email failed:</label><br /><label id="reportingErrorMessage"></label>
       </div>
       <fluent-button
-        appearance="stealth"
+        appearance="accent"
         style="visibility: hidden"
         id="moveToJunkButton"
         aria-describedby="moveToJunkTooltip"
       >
         Move email to junk and close pane
       </fluent-button>
-      <fluent-tooltip id="moveToJunkTooltip" anchor="moveToJunkButton"
+      <fluent-tooltip id="moveToJunkTooltip" anchor="moveToJunkButton" class="ms-font-s"
         >Move the current email to the Junk Email folder and close the pane</fluent-tooltip
       >
     </main>
