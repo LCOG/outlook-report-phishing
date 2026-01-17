@@ -32,7 +32,7 @@
         your add-in to see app body.
       </h2>
     </section>
-    <main id="app-body" class="ms-welcome__main" style="display: none">
+    <main id="app-body" class="ms-welcome__main">
       <h2 class="ms-font-xl">LCOG Report Phish [Development Version]</h2>
       <fluent-divider></fluent-divider>
       <p class="ms-font-l">This email is:</p>
@@ -64,18 +64,13 @@
       >
       <!--TODO: add element for displaying the result state of clicking the
       report button  -->
-      <div id="reportingSuccess" style="visibility: hidden">
+      <div class="reportingResult" id="reportingSuccess">
         <label>Email has been reported to Service Desk.</label>
       </div>
-      <div id="reportingError" style="visibility: hidden">
+      <div class="reportingResult" id="reportingError">
         <label>Reporting the email failed:</label><br /><label id="reportingErrorMessage"></label>
       </div>
-      <fluent-button
-        appearance="accent"
-        style="visibility: hidden"
-        id="moveToJunkButton"
-        aria-describedby="moveToJunkTooltip"
-      >
+      <fluent-button appearance="accent" id="moveToJunkButton" aria-describedby="moveToJunkTooltip">
         Move email to junk and close pane
       </fluent-button>
       <fluent-tooltip id="moveToJunkTooltip" anchor="moveToJunkButton" class="ms-font-s"
