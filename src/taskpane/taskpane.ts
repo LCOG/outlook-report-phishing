@@ -3,10 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global document, Office, console */
-
-import { AccountManager } from "./authConfig";
-import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
+/* global document, Office, console, process, fetch */
 
 import {
   provideFluentDesignSystem,
@@ -111,7 +108,7 @@ function displayError(errorMessage) {
   }
 }
 
-async function logPhishingReport(emailAddress, message) {
+async function logPhishingReport(emailAddress: string, message: any) {
   console.log("Got message:");
   console.log(message.body);
 

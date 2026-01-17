@@ -3,7 +3,7 @@
 
 // This file provides the provides functionality to get Microsoft Graph data.
 
-/* global console fetch */
+/* global console fetch HeadersInit BodyInit Headers */
 
 /**
  *  Calls a Microsoft Graph API and returns the response.
