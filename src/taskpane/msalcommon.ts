@@ -8,6 +8,7 @@ import {
   type IPublicClientApplication,
   type RedirectRequest,
 } from "@azure/msal-browser";
+
 import { msalConfig } from "./msalconfig";
 
 /**
@@ -15,7 +16,11 @@ import { msalConfig } from "./msalconfig";
  * @param accountContext The account context to get the token request for.
  * @returns The token request.
  */
-export function getTokenRequest(scopes: string[], selectAccount: boolean, redirectUri?: string): RedirectRequest {
+export function getTokenRequest(
+  scopes: string[],
+  selectAccount: boolean,
+  redirectUri?: string
+): RedirectRequest {
   let additionalProperties: Partial<RedirectRequest> = {};
   if (selectAccount) {
     additionalProperties = { prompt: "select_account" };

@@ -1,0 +1,4 @@
+onlyBuiltDependencies:
+  - '@microsoft/m365agentstoolkit-cli'
+  - core-js
+  - keytar

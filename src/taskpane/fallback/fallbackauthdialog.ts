@@ -5,15 +5,14 @@
 
 /* global Office, window, URLSearchParams */
 
-import {
-  AuthenticationResult,
-  createStandardPublicClientApplication,
-  IPublicClientApplication,
-} from "@azure/msal-browser";
+import { createStandardPublicClientApplication } from "@azure/msal-browser";
+
 import { getTokenRequest } from "../msalcommon";
-import { createLocalUrl } from "../util";
 import { defaultScopes, msalConfig } from "../msalconfig";
+import { createLocalUrl } from "../util";
+
 import type { AuthDialogResult } from "../authConfig";
+import type { AuthenticationResult, IPublicClientApplication } from "@azure/msal-browser";
 
 // read querystring parameter
 function getQueryParameter(param: string) {
@@ -25,7 +24,10 @@ async function sendDialogMessage(message: string) {
   await Office.onReady();
   Office.context.ui.messageParent(message);
 }
-async function returnResult(publicClientApp: IPublicClientApplication, authResult: AuthenticationResult) {
+async function returnResult(
+  publicClientApp: IPublicClientApplication,
+  authResult: AuthenticationResult
+) {
   publicClientApp.setActiveAccount(authResult.account);
 
   const authDialogResult: AuthDialogResult = {
@@ -40,7 +42,9 @@ export async function initializeMsal() {
   const publicClientApp = await createStandardPublicClientApplication(msalConfig);
   try {
     if (getQueryParameter("logout") === "1") {
-      await publicClientApp.logoutRedirect({ postLogoutRedirectUri: createLocalUrl("dialog.html?close=1") });
+      await publicClientApp.logoutRedirect({
+        postLogoutRedirectUri: createLocalUrl("dialog.html?close=1"),
+      });
       return;
     } else if (getQueryParameter("close") === "1") {
       sendDialogMessage("close");
@@ -61,7 +65,9 @@ export async function initializeMsal() {
 
   try {
     if (publicClientApp.getActiveAccount()) {
-      const result = await publicClientApp.acquireTokenSilent(getTokenRequest(defaultScopes, false));
+      const result = await publicClientApp.acquireTokenSilent(
+        getTokenRequest(defaultScopes, false)
+      );
       if (result) {
         return returnResult(publicClientApp, result);
       }
@@ -70,7 +76,9 @@ export async function initializeMsal() {
     /* empty */
   }
 
-  publicClientApp.acquireTokenRedirect(getTokenRequest(defaultScopes, true, createLocalUrl("dialog.html")));
+  publicClientApp.acquireTokenRedirect(
+    getTokenRequest(defaultScopes, true, createLocalUrl("dialog.html"))
+  );
 }
 
 initializeMsal();
