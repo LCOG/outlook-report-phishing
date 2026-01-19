@@ -139,13 +139,6 @@ fluent-tooltip::part(tooltip) {
   visibility: hidden;
 }
 
-#userData {
-  width: 100%;
-  padding: 10px;
-  background-color: var(--neutral-fill-input-rest);
-  border-radius: var(--control-corner-radius);
-}
-
 b {
   font-weight: var(--font-weight-semibold);
 }

@@ -35,7 +35,6 @@ const forwardEmail = process.env.FORWARD_TO;
 const accountManager = new AccountManager();
 const sideloadMsg = document.getElementById("sideload-msg");
 const appBody = document.getElementById("app-body");
-const getUserDataButton = document.getElementById("getUserData");
 const reportEmailButton = document.getElementById("reportPhishingEmail");
 const userName = document.getElementById("userName");
 const userEmail = document.getElementById("userEmail");
@@ -52,9 +51,6 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
     if (sideloadMsg) sideloadMsg.style.display = "none";
     if (appBody) appBody.style.display = "flex";
-    if (getUserDataButton) {
-      getUserDataButton.addEventListener("click", getUserData);
-    }
     if (reportEmailButton) {
       reportEmailButton.addEventListener("click", reportPhishingEmail);
     }
