@@ -62,13 +62,43 @@
       <fluent-tooltip id="reportButtonTooltip" anchor="reportPhishingEmail" class="ms-font-s"
         >Report this email as a phishing or a spam message</fluent-tooltip
       >
-      <!--TODO: add element for displaying the result state of clicking the
-      report button  -->
+      <div id="reportingProgress" class="reportingResult">
+        <fluent-progress-ring></fluent-progress-ring>
+        <label>Reporting email...</label>
+      </div>
       <div class="reportingResult" id="reportingSuccess">
+        <!-- Show a green checkmark when the email has been successfully reported -->
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z"
+            fill="#28a745"
+          />
+        </svg>
         <label>Email has been reported to Service Desk.</label>
       </div>
       <div class="reportingResult" id="reportingError">
-        <label>Reporting the email failed:</label><br /><label id="reportingErrorMessage"></label>
+        <!-- Show a red X when the email could not be reported -->
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z"
+            fill="#dc3545"
+          />
+        </svg>
+        <span>
+          <label>Reporting the email failed:</label><br /><label id="reportingErrorMessage"></label>
+        </span>
       </div>
       <fluent-button appearance="accent" id="moveToJunkButton" aria-describedby="moveToJunkTooltip">
         Move email to junk and close pane

@@ -13,6 +13,7 @@ import {
   fluentRadioGroup,
   fluentTextArea,
   fluentTooltip,
+  fluentProgressRing,
 } from "@fluentui/web-components";
 
 import { AccountManager } from "./authConfig";
@@ -24,7 +25,8 @@ provideFluentDesignSystem().register(
   fluentRadio(),
   fluentRadioGroup(),
   fluentTextArea(),
-  fluentTooltip()
+  fluentTooltip(),
+  fluentProgressRing()
 );
 
 const reportPhishApiUrl = process.env.API_URL;
@@ -43,6 +45,7 @@ const reportingErrorMessage = document.getElementById("reportingErrorMessage");
 const reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup") as any;
 const additionalInfoArea = document.getElementById("additionalInfo") as any;
 const moveToJunkButton = document.getElementById("moveToJunkButton");
+const reportingProgress = document.getElementById("reportingProgress");
 
 // Initialize when Office is ready.
 Office.onReady((info) => {
@@ -91,6 +94,9 @@ async function getUserData() {
 }
 
 function displaySuccess() {
+  if (reportingProgress) {
+    reportingProgress.style.visibility = "hidden";
+  }
   if (reportingSuccess) {
     reportingSuccess.style.visibility = "visible";
   }
@@ -100,6 +106,9 @@ function displaySuccess() {
 }
 
 function displayError(errorMessage) {
+  if (reportingProgress) {
+    reportingProgress.style.visibility = "hidden";
+  }
   if (reportingError) {
     reportingError.style.visibility = "visible";
   }
@@ -132,6 +141,20 @@ async function logPhishingReport(emailAddress: string, message: any) {
 }
 
 async function reportPhishingEmail() {
+  // Show progress and disable button
+  if (reportEmailButton) {
+    (reportEmailButton as any).disabled = true;
+  }
+  if (reportingProgress) {
+    reportingProgress.style.visibility = "visible";
+  }
+  if (reportingSuccess) {
+    reportingSuccess.style.visibility = "hidden";
+  }
+  if (reportingError) {
+    reportingError.style.visibility = "hidden";
+  }
+
   // Get access token for forwarding the email via Graph API
   const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
 

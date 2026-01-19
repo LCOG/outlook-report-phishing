@@ -78,6 +78,24 @@ main {
 
 .reportingResult {
   visibility: hidden;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  justify-content: center;
+}
+
+#reportingProgress fluent-progress-ring {
+  width: 24px;
+  height: 24px;
+}
+
+#reportingSuccess svg {
+  flex-shrink: 0;
+}
+
+#reportingError svg {
+  flex-shrink: 0;
 }
 
 fluent-button {
