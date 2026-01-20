@@ -77,12 +77,26 @@ main {
 }
 
 .reportingResult {
-  visibility: hidden;
   display: flex;
   align-items: center;
   gap: 10px;
   margin: 10px 0;
   justify-content: center;
+  animation: fadeIn 0.2s ease-in;
+}
+
+/* Utility class for hiding elements */
+.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 #reportingProgress fluent-progress-ring {
@@ -133,10 +147,6 @@ fluent-tooltip {
 fluent-tooltip::part(tooltip) {
   max-width: 65vw;
   text-wrap: balance;
-}
-
-#moveToJunkButton {
-  visibility: hidden;
 }
 
 b {
