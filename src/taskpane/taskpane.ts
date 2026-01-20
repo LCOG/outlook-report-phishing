@@ -39,10 +39,10 @@ enum UIState {
 
 interface UIElements {
   reportEmailButton: HTMLElement | null;
-  progress: HTMLElement | null;
-  success: HTMLElement | null;
-  error: HTMLElement | null;
-  errorMessage: HTMLElement | null;
+  reportInProgress: HTMLElement | null;
+  reportSuccess: HTMLElement | null;
+  reportError: HTMLElement | null;
+  reportErrorMessage: HTMLElement | null;
   moveToJunkButton: HTMLElement | null;
   reportMessageTypeGroup: any;
   additionalInfoArea: any;
@@ -56,10 +56,10 @@ let currentState: UIState = UIState.IDLE;
 // Cache DOM elements
 const elements: UIElements = {
   reportEmailButton: null,
-  progress: null,
-  success: null,
-  error: null,
-  errorMessage: null,
+  reportInProgress: null,
+  reportSuccess: null,
+  reportError: null,
+  reportErrorMessage: null,
   moveToJunkButton: null,
   reportMessageTypeGroup: null,
   additionalInfoArea: null,
@@ -74,10 +74,10 @@ const accountManager = new AccountManager();
 function initializeElements(): void {
   // Cache all DOM element references with proper type assertions
   elements.reportEmailButton = document.getElementById("reportEmailButton");
-  elements.progress = document.getElementById("reportingProgress");
-  elements.success = document.getElementById("reportingSuccess");
-  elements.error = document.getElementById("reportingError");
-  elements.errorMessage = document.getElementById("reportingErrorMessage");
+  elements.reportInProgress = document.getElementById("reportInProgress");
+  elements.reportSuccess = document.getElementById("reportingSuccess");
+  elements.reportError = document.getElementById("reportingError");
+  elements.reportErrorMessage = document.getElementById("reportingErrorMessage");
   elements.moveToJunkButton = document.getElementById("moveToJunkButton");
   elements.reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup");
   elements.additionalInfoArea = document.getElementById("additionalInfo");
@@ -87,10 +87,10 @@ function initializeElements(): void {
   // Verify critical elements exist
   if (
     !elements.reportEmailButton ||
-    !elements.progress ||
-    !elements.success ||
-    !elements.error ||
-    !elements.errorMessage ||
+    !elements.reportInProgress ||
+    !elements.reportSuccess ||
+    !elements.reportError ||
+    !elements.reportErrorMessage ||
     !elements.moveToJunkButton ||
     !elements.reportMessageTypeGroup ||
     !elements.additionalInfoArea ||
@@ -109,25 +109,25 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
   currentState = state;
 
   // Hides all reporting result elements
-  const results = [elements.progress, elements.success, elements.error];
+  const results = [elements.reportInProgress, elements.reportSuccess, elements.reportError];
   results.forEach((el) => el?.classList.add("hidden"));
 
   // Show the appropriate element based on the current state
   switch (state) {
     case UIState.REPORTING:
       elements.reportEmailButton?.setAttribute("disabled", "true");
-      elements.progress?.classList.remove("hidden");
+      elements.reportInProgress?.classList.remove("hidden");
       break;
     case UIState.SUCCESS:
       elements.reportEmailButton?.setAttribute("disabled", "true");
-      elements.success?.classList.remove("hidden");
+      elements.reportSuccess?.classList.remove("hidden");
       elements.moveToJunkButton?.classList.remove("hidden");
       break;
     case UIState.ERROR:
       elements.reportEmailButton?.setAttribute("disabled", "false");
-      elements.error?.classList.remove("hidden");
-      if (elements.errorMessage) {
-        elements.errorMessage.innerText = errorMessage || "Something went wrong";
+      elements.reportError?.classList.remove("hidden");
+      if (elements.reportErrorMessage) {
+        elements.reportErrorMessage.innerText = errorMessage || "Something went wrong";
       }
       break;
     case UIState.IDLE:

@@ -97,7 +97,7 @@ main {
   }
 }
 
-#reportingProgress fluent-progress-ring {
+#reportInProgress fluent-progress-ring {
   width: 24px;
   height: 24px;
 }
