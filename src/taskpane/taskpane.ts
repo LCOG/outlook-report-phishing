@@ -246,12 +246,12 @@ async function handleReportClick(): Promise<void> {
 
     if (forwardResult.ok) {
       updateUIState(UIState.SUCCESS);
-      // Auto-dismiss success message after 3 seconds
-      setTimeout(() => {
-        if (currentState === UIState.SUCCESS) {
-          updateUIState(UIState.IDLE);
-        }
-      }, 3000);
+      // // Auto-dismiss success message after 3 seconds
+      // setTimeout(() => {
+      //   if (currentState === UIState.SUCCESS) {
+      //     updateUIState(UIState.IDLE);
+      //   }
+      // }, 3000);
     } else {
       throw new Error(`HTTP ${forwardResult.status} ${forwardResult.statusText}`);
     }
