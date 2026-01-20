@@ -14,6 +14,10 @@ body {
   color: var(--neutral-foreground-rest);
 }
 
+main {
+  display: none;
+}
+
 .ms-welcome {
   display: flex;
   flex-direction: column;
@@ -67,14 +71,53 @@ body {
   font-size: var(--type-ramp-minus-1-font-size);
   line-height: var(--type-ramp-minus-1-line-height);
   color: var(--neutral-foreground-hint);
-  margin-top: 4px;
-  margin-bottom: 16px;
   text-align: center;
+}
+
+.reportingResult {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-in;
+}
+
+/* Utility class for hiding elements */
+.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#reportInProgress fluent-progress-ring {
+  width: 24px;
+  height: 24px;
+}
+
+#reportingSuccess svg {
+  flex-shrink: 0;
+}
+
+#reportingError svg {
+  flex-shrink: 0;
 }
 
 fluent-button {
   margin: 0.5em;
   width: auto;
+}
+
+fluent-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 fluent-divider {
@@ -102,13 +145,6 @@ fluent-tooltip {
 fluent-tooltip::part(tooltip) {
   max-width: 65vw;
   text-wrap: balance;
-}
-
-#userData {
-  width: 100%;
-  padding: 10px;
-  background-color: var(--neutral-fill-input-rest);
-  border-radius: var(--control-corner-radius);
 }
 
 b {

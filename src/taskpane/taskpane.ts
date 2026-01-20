@@ -13,6 +13,7 @@ import {
   fluentRadioGroup,
   fluentTextArea,
   fluentTooltip,
+  fluentProgressRing,
 } from "@fluentui/web-components";
 
 import { AccountManager } from "./authConfig";
@@ -24,94 +25,166 @@ provideFluentDesignSystem().register(
   fluentRadio(),
   fluentRadioGroup(),
   fluentTextArea(),
-  fluentTooltip()
+  fluentTooltip(),
+  fluentProgressRing()
 );
+
+// Type definitions
+enum UIState {
+  IDLE = "idle",
+  REPORTING = "reporting",
+  SUCCESS = "success",
+  ERROR = "error",
+}
+
+interface UIElements {
+  reportEmailButton: HTMLElement | null;
+  reportEmailTooltip: HTMLElement | null;
+  reportInProgress: HTMLElement | null;
+  reportSuccess: HTMLElement | null;
+  reportError: HTMLElement | null;
+  reportErrorMessage: HTMLElement | null;
+  moveToJunkButton: HTMLElement | null;
+  reportMessageTypeGroup: any;
+  additionalInfoArea: any;
+  sideloadMsg: HTMLElement | null;
+  appBody: HTMLElement | null;
+}
+
+// State management
+let currentState: UIState = UIState.IDLE;
+
+// Cache DOM elements
+const elements: UIElements = {
+  reportEmailButton: null,
+  reportEmailTooltip: null,
+  reportInProgress: null,
+  reportSuccess: null,
+  reportError: null,
+  reportErrorMessage: null,
+  moveToJunkButton: null,
+  reportMessageTypeGroup: null,
+  additionalInfoArea: null,
+  sideloadMsg: null,
+  appBody: null,
+};
 
 const reportPhishApiUrl = process.env.API_URL;
 const forwardEmail = process.env.FORWARD_TO;
-
 const accountManager = new AccountManager();
-const sideloadMsg = document.getElementById("sideload-msg");
-const appBody = document.getElementById("app-body");
-const getUserDataButton = document.getElementById("getUserData");
-const reportEmailButton = document.getElementById("reportPhishingEmail");
-const userName = document.getElementById("userName");
-const userEmail = document.getElementById("userEmail");
-const reportingSuccess = document.getElementById("reportingSuccess");
-const reportingError = document.getElementById("reportingError");
-const reportingErrorMessage = document.getElementById("reportingErrorMessage");
-const reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup") as any;
-const additionalInfoArea = document.getElementById("additionalInfo") as any;
-const moveToJunkButton = document.getElementById("moveToJunkButton");
+
+function initializeElements(): void {
+  // Cache all DOM element references with proper type assertions
+  elements.reportEmailButton = document.getElementById("reportEmailButton");
+  elements.reportEmailTooltip = document.getElementById("reportEmailTooltip");
+  elements.reportInProgress = document.getElementById("reportInProgress");
+  elements.reportSuccess = document.getElementById("reportingSuccess");
+  elements.reportError = document.getElementById("reportingError");
+  elements.reportErrorMessage = document.getElementById("reportingErrorMessage");
+  elements.moveToJunkButton = document.getElementById("moveToJunkButton");
+  elements.reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup");
+  elements.additionalInfoArea = document.getElementById("additionalInfo");
+  elements.sideloadMsg = document.getElementById("sideload-msg");
+  elements.appBody = document.getElementById("app-body");
+
+  // Verify critical elements exist
+  if (
+    !elements.reportEmailButton ||
+    !elements.reportInProgress ||
+    !elements.reportSuccess ||
+    !elements.reportError ||
+    !elements.reportErrorMessage ||
+    !elements.moveToJunkButton ||
+    !elements.reportMessageTypeGroup ||
+    !elements.additionalInfoArea ||
+    !elements.appBody
+  ) {
+    console.error("Required DOM elements not found");
+  }
+}
+
+/**
+ * Updates the UI based on the provided state
+ * @param state The new UI state
+ * @param errorMessage Optional error message for ERROR state
+ */
+function updateUIState(state: UIState, errorMessage: string = ""): void {
+  currentState = state;
+
+  // Hides all reporting result elements
+  const results = [elements.reportInProgress, elements.reportSuccess, elements.reportError];
+  results.forEach((el) => el?.classList.add("hidden"));
+
+  // Show the appropriate element based on the current state
+  switch (state) {
+    case UIState.REPORTING:
+      elements.reportEmailButton?.setAttribute("disabled", "true");
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Report in progress, please wait...";
+      }
+      elements.reportInProgress?.classList.remove("hidden");
+      break;
+    case UIState.SUCCESS:
+      elements.reportEmailButton?.setAttribute("disabled", "true");
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Email reported successfully";
+      }
+      elements.reportSuccess?.classList.remove("hidden");
+      elements.moveToJunkButton?.classList.remove("hidden");
+      break;
+    case UIState.ERROR:
+      elements.reportEmailButton?.setAttribute("disabled", "false");
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Click to retry reporting the email";
+      }
+      elements.reportError?.classList.remove("hidden");
+      if (elements.reportErrorMessage) {
+        elements.reportErrorMessage.innerText = errorMessage || "Something went wrong";
+      }
+      break;
+    case UIState.IDLE:
+      // Everything hidden is the default idle state
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Report this email as a phishing or a spam message";
+      }
+      break;
+  }
+}
 
 // Initialize when Office is ready.
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
-    if (sideloadMsg) sideloadMsg.style.display = "none";
-    if (appBody) appBody.style.display = "flex";
-    if (getUserDataButton) {
-      getUserDataButton.addEventListener("click", getUserData);
+    initializeElements();
+
+    if (elements.sideloadMsg) elements.sideloadMsg.style.display = "none";
+    if (elements.appBody) elements.appBody.style.display = "flex";
+
+    if (elements.reportEmailButton) {
+      elements.reportEmailButton.addEventListener("click", handleReportClick);
     }
-    if (reportEmailButton) {
-      reportEmailButton.addEventListener("click", reportPhishingEmail);
+    if (elements.moveToJunkButton) {
+      elements.moveToJunkButton.addEventListener("click", handleMoveToJunkClick);
     }
-    if (moveToJunkButton) {
-      moveToJunkButton.addEventListener("click", moveToJunk);
-    }
+
     // Initialize MSAL.
     accountManager.initialize();
+    updateUIState(UIState.IDLE);
   }
 });
 
 /**
- * Gets the user data such as name and email and displays it
- * in the task pane.
+ * Gets the user's name and email
  */
 async function getUserData() {
-  const userDataElement = document.getElementById("userData");
-  // Specify minimum scopes for the token needed.
   const accessToken = await accountManager.ssoGetAccessToken(["user.read"]);
-
   const response: { displayName: string; mail: string } = await makeGraphRequest({
     accessToken,
     path: "/me",
   });
-
-  if (userDataElement) {
-    userDataElement.style.visibility = "visible";
-  }
-  if (userName) {
-    userName.innerText = response.displayName ?? "";
-  }
-  if (userEmail) {
-    userEmail.innerText = response.mail ?? "";
-  }
-
   return response;
 }
 
-function displaySuccess() {
-  if (reportingSuccess) {
-    reportingSuccess.style.visibility = "visible";
-  }
-  if (moveToJunkButton) {
-    moveToJunkButton.style.visibility = "visible";
-  }
-}
-
-function displayError(errorMessage) {
-  if (reportingError) {
-    reportingError.style.visibility = "visible";
-  }
-  if (reportingErrorMessage) {
-    reportingErrorMessage.innerText = errorMessage ?? "Something went wrong";
-  }
-}
-
 async function logPhishingReport(emailAddress: string, message: any) {
-  console.log("Got message:");
-  console.log(message.body);
-
   try {
     const response = await fetch(reportPhishApiUrl, {
       method: "POST",
@@ -125,112 +198,120 @@ async function logPhishingReport(emailAddress: string, message: any) {
     });
 
     const result = await response.json();
-    console.log(result);
+    console.log("Phishing report logged:", result);
   } catch (error) {
-    console.error(error.message);
+    console.error("Failed to log phishing report:", error.message);
   }
 }
 
-async function reportPhishingEmail() {
-  // Get access token for forwarding the email via Graph API
-  const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
+async function handleReportClick(): Promise<void> {
+  try {
+    updateUIState(UIState.REPORTING);
 
-  // The type of Office.context.mailbox.item can vary depending on the context
-  // so we explicitly assign the expected type here.
-  // TODO: Note that this is a suspected phishing email, and any links and
-  // attachments on it need to be treated as malicious.
-  // Research best practices on handling such emails.
-  const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
+    const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
 
-  if (!msg.itemId) {
-    console.error("Failed to retrieve current email from Office context.");
-    return;
-  }
+    // The type of Office.context.mailbox.item can vary depending on the context
+    // so we explicitly assign the expected type here.
+    // TODO: Note that this is a suspected phishing email, and any links and
+    // attachments on it need to be treated as malicious.
+    // Research best practices on handling such emails.
+    const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
 
-  const msgId = Office.context.mailbox.convertToRestId(
-    msg.itemId,
-    Office.MailboxEnums.RestVersion.v2_0
-  );
-  console.log("Message ID from Office.js API:");
-  console.log(msgId);
+    if (!msg.itemId) {
+      throw new Error("Failed to retrieve current email from Office context.");
+    }
 
-  const { displayName, mail } = await getUserData();
+    const msgId = Office.context.mailbox.convertToRestId(
+      msg.itemId,
+      Office.MailboxEnums.RestVersion.v2_0
+    );
+    const { displayName, mail } = await getUserData();
 
-  console.log("User email:");
-  console.log(mail);
-  console.log("User name:");
-  console.log(displayName);
+    // Get the current email subject and body via Graph API
+    const currentMessageBody = await makeGraphRequest({
+      accessToken: accessToken,
+      path: `/me/messages/${msgId}`,
+      queryParams: "?$select=subject,body",
+      additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
+    });
 
-  // Get the current email subject and body via Graph API and send it to
-  // Team App phishing report endpoint.
-  await makeGraphRequest({
-    accessToken: accessToken,
-    path: `/me/messages/${msgId}`,
-    queryParams: "?$select=subject,body",
-    additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
-  })
-    .then(async (currentMessageBody) => logPhishingReport(mail, currentMessageBody))
-    .catch((reject) => console.error(reject));
+    await logPhishingReport(mail, currentMessageBody);
 
-  // Set body for the forwarding request
-  const reportType = reportMessageTypeGroup ? reportMessageTypeGroup.value : "unknown";
-  const additionalInfo = additionalInfoArea ? additionalInfoArea.value : "";
-  const forwardComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in. ${additionalInfo ? `\n\nAdditional details: ${additionalInfo}` : ""}`;
+    // Set body for the forwarding request
+    const reportType = elements.reportMessageTypeGroup?.value || "unknown";
+    const additionalInfo = elements.additionalInfoArea?.value || "";
+    const forwardComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in. ${additionalInfo ? `\n\nAdditional details: ${additionalInfo}` : ""}`;
 
-  const forwardBody = {
-    comment: forwardComment,
-    toRecipients: [
-      {
-        emailAddress: {
-          name: "LCOG IT",
-          address: forwardEmail,
+    const forwardBody = {
+      comment: forwardComment,
+      toRecipients: [
+        {
+          emailAddress: {
+            name: "LCOG IT",
+            address: forwardEmail,
+          },
         },
-      },
-    ],
-  };
+      ],
+    };
 
-  // Forward the current email to specified LCOG IT inbox via Graph API
-  const forwardResult = await makePostGraphRequest({
-    accessToken,
-    path: `/me/messages/${msgId}/forward`,
-    additionalHeaders: { "Content-Type": "application/json" },
-    body: JSON.stringify(forwardBody),
-  });
+    const forwardResult = await makePostGraphRequest({
+      accessToken,
+      path: `/me/messages/${msgId}/forward`,
+      additionalHeaders: { "Content-Type": "application/json" },
+      body: JSON.stringify(forwardBody),
+    });
 
-  if (forwardResult.ok) {
-    displaySuccess();
-  } else {
-    console.error(forwardResult);
-    displayError(`HTTP ${forwardResult.status} ${forwardResult.statusText}`);
+    if (forwardResult.ok) {
+      updateUIState(UIState.SUCCESS);
+      // // Auto-dismiss success message after 3 seconds
+      // setTimeout(() => {
+      //   if (currentState === UIState.SUCCESS) {
+      //     updateUIState(UIState.IDLE);
+      //   }
+      // }, 3000);
+    } else {
+      throw new Error(`HTTP ${forwardResult.status} ${forwardResult.statusText}`);
+    }
+  } catch (error) {
+    console.error("Report clicking failed:", error);
+    updateUIState(
+      UIState.ERROR,
+      error instanceof Error ? error.message : "Reporting the email failed"
+    );
   }
 }
 
-async function moveToJunk() {
-  const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
-  const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
+async function handleMoveToJunkClick(): Promise<void> {
+  try {
+    const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
+    const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
 
-  if (!msg.itemId) {
-    console.error("Failed to retrieve current email from Office context.");
-    return;
-  }
+    if (!msg.itemId) {
+      throw new Error("Failed to retrieve current email from Office context.");
+    }
 
-  const msgId = Office.context.mailbox.convertToRestId(
-    msg.itemId,
-    Office.MailboxEnums.RestVersion.v2_0
-  );
+    const msgId = Office.context.mailbox.convertToRestId(
+      msg.itemId,
+      Office.MailboxEnums.RestVersion.v2_0
+    );
 
-  // Move email to junk folder
-  const response = await makePostGraphRequest({
-    accessToken,
-    path: `/me/messages/${msgId}/move`,
-    additionalHeaders: { "Content-Type": "application/json" },
-    body: JSON.stringify({ destinationId: "junkemail" }),
-  });
+    const response = await makePostGraphRequest({
+      accessToken,
+      path: `/me/messages/${msgId}/move`,
+      additionalHeaders: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destinationId: "junkemail" }),
+    });
 
-  if (response.ok) {
-    Office.context.ui.closeContainer();
-  } else {
-    console.error(response);
-    displayError(`Failed to move email: ${response.status} ${response.statusText}`);
+    if (response.ok) {
+      Office.context.ui.closeContainer();
+    } else {
+      throw new Error(`${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error("Moving to junk failed:", error);
+    updateUIState(
+      UIState.ERROR,
+      error instanceof Error ? error.message : "Failed to move email to junk"
+    );
   }
 }

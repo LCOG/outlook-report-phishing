@@ -32,7 +32,7 @@
         your add-in to see app body.
       </h2>
     </section>
-    <main id="app-body" class="ms-welcome__main" style="display: none">
+    <main id="app-body" class="ms-welcome__main">
       <h2 class="ms-font-xl">LCOG Report Phish [Development Version]</h2>
       <fluent-divider></fluent-divider>
       <p class="ms-font-l">This email is:</p>
@@ -54,29 +54,63 @@
       </fluent-text-area>
       <fluent-button
         appearance="accent"
-        id="reportPhishingEmail"
-        aria-describedby="reportButtonTooltip"
+        id="reportEmailButton"
+        aria-describedby="reportEmailTooltip"
       >
         Report email
       </fluent-button>
-      <fluent-tooltip id="reportButtonTooltip" anchor="reportPhishingEmail" class="ms-font-s"
-        >Report this email as a phishing or a spam message</fluent-tooltip
-      >
-      <!--TODO: add element for displaying the result state of clicking the
-      report button  -->
-      <div id="reportingSuccess" style="visibility: hidden">
+      <!-- Tooltip text content is set dynamically depending on state -->
+      <fluent-tooltip
+        id="reportEmailTooltip"
+        anchor="reportEmailButton"
+        class="ms-font-s"
+      ></fluent-tooltip>
+      <div id="reportInProgress" class="reportingResult hidden" aria-live="polite" role="status">
+        <fluent-progress-ring></fluent-progress-ring>
+        <label>Reporting email...</label>
+      </div>
+      <div class="reportingResult hidden" id="reportingSuccess" aria-live="polite" role="status">
+        <!-- Show a green checkmark when the email has been successfully reported -->
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z"
+            fill="#28a745"
+          />
+        </svg>
         <label>Email has been reported to Service Desk.</label>
       </div>
-      <div id="reportingError" style="visibility: hidden">
-        <label>Reporting the email failed:</label><br /><label id="reportingErrorMessage"></label>
+      <div class="reportingResult hidden" id="reportingError" aria-live="assertive" role="alert">
+        <!-- Show a red X when the email could not be reported -->
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z"
+            fill="#dc3545"
+          />
+        </svg>
+        <span>
+          <label>Reporting the email failed:</label><br />
+          <label id="reportingErrorMessage"></label>
+        </span>
       </div>
       <fluent-button
         appearance="accent"
-        style="visibility: hidden"
         id="moveToJunkButton"
         aria-describedby="moveToJunkTooltip"
+        class="hidden"
       >
-        Move email to junk and close pane
+        Mark as junk and close pane
       </fluent-button>
       <fluent-tooltip id="moveToJunkTooltip" anchor="moveToJunkButton" class="ms-font-s"
         >Move the current email to the Junk Email folder and close the pane</fluent-tooltip
