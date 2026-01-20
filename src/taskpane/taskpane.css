@@ -71,8 +71,6 @@ main {
   font-size: var(--type-ramp-minus-1-font-size);
   line-height: var(--type-ramp-minus-1-line-height);
   color: var(--neutral-foreground-hint);
-  margin-top: 4px;
-  margin-bottom: 16px;
   text-align: center;
 }
 
