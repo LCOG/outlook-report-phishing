@@ -112,21 +112,19 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
   const results = [elements.progress, elements.success, elements.error];
   results.forEach((el) => el?.classList.add("hidden"));
 
-  // Reset button state
-  if (elements.reportEmailButton) {
-    (elements.reportEmailButton as any).disabled = state === UIState.REPORTING;
-  }
-
   // Show the appropriate element based on the current state
   switch (state) {
     case UIState.REPORTING:
+      elements.reportEmailButton?.setAttribute("disabled", "true");
       elements.progress?.classList.remove("hidden");
       break;
     case UIState.SUCCESS:
+      elements.reportEmailButton?.setAttribute("disabled", "true");
       elements.success?.classList.remove("hidden");
       elements.moveToJunkButton?.classList.remove("hidden");
       break;
     case UIState.ERROR:
+      elements.reportEmailButton?.setAttribute("disabled", "false");
       elements.error?.classList.remove("hidden");
       if (elements.errorMessage) {
         elements.errorMessage.innerText = errorMessage || "Something went wrong";
