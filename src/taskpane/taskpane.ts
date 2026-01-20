@@ -38,7 +38,7 @@ enum UIState {
 }
 
 interface UIElements {
-  button: HTMLElement | null;
+  reportEmailButton: HTMLElement | null;
   progress: HTMLElement | null;
   success: HTMLElement | null;
   error: HTMLElement | null;
@@ -55,7 +55,7 @@ let currentState: UIState = UIState.IDLE;
 
 // Cache DOM elements
 const elements: UIElements = {
-  button: null,
+  reportEmailButton: null,
   progress: null,
   success: null,
   error: null,
@@ -73,7 +73,7 @@ const accountManager = new AccountManager();
 
 function initializeElements(): void {
   // Cache all DOM element references with proper type assertions
-  elements.button = document.getElementById("reportPhishingEmail");
+  elements.reportEmailButton = document.getElementById("reportEmailButton");
   elements.progress = document.getElementById("reportingProgress");
   elements.success = document.getElementById("reportingSuccess");
   elements.error = document.getElementById("reportingError");
@@ -86,7 +86,7 @@ function initializeElements(): void {
 
   // Verify critical elements exist
   if (
-    !elements.button ||
+    !elements.reportEmailButton ||
     !elements.progress ||
     !elements.success ||
     !elements.error ||
@@ -109,8 +109,8 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
   results.forEach((el) => el?.classList.add("hidden"));
 
   // Reset button state
-  if (elements.button) {
-    (elements.button as any).disabled = state === UIState.REPORTING;
+  if (elements.reportEmailButton) {
+    (elements.reportEmailButton as any).disabled = state === UIState.REPORTING;
   }
 
   // Show the appropriate element based on the current state
@@ -142,8 +142,8 @@ Office.onReady((info) => {
     if (elements.sideloadMsg) elements.sideloadMsg.style.display = "none";
     if (elements.appBody) elements.appBody.style.display = "flex";
 
-    if (elements.button) {
-      elements.button.addEventListener("click", handleReportClick);
+    if (elements.reportEmailButton) {
+      elements.reportEmailButton.addEventListener("click", handleReportClick);
     }
     if (elements.moveToJunkButton) {
       elements.moveToJunkButton.addEventListener("click", handleMoveToJunkClick);
