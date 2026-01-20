@@ -55,13 +55,16 @@
       <fluent-button
         appearance="accent"
         id="reportEmailButton"
-        aria-describedby="reportButtonTooltip"
+        aria-describedby="reportEmailTooltip"
       >
         Report email
       </fluent-button>
-      <fluent-tooltip id="reportButtonTooltip" anchor="reportEmailButton" class="ms-font-s"
-        >Report this email as a phishing or a spam message</fluent-tooltip
-      >
+      <!-- Tooltip text content is set dynamically depending on state -->
+      <fluent-tooltip
+        id="reportEmailTooltip"
+        anchor="reportEmailButton"
+        class="ms-font-s"
+      ></fluent-tooltip>
       <div id="reportInProgress" class="reportingResult hidden" aria-live="polite" role="status">
         <fluent-progress-ring></fluent-progress-ring>
         <label>Reporting email...</label>

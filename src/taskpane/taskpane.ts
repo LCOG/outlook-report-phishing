@@ -39,6 +39,7 @@ enum UIState {
 
 interface UIElements {
   reportEmailButton: HTMLElement | null;
+  reportEmailTooltip: HTMLElement | null;
   reportInProgress: HTMLElement | null;
   reportSuccess: HTMLElement | null;
   reportError: HTMLElement | null;
@@ -56,6 +57,7 @@ let currentState: UIState = UIState.IDLE;
 // Cache DOM elements
 const elements: UIElements = {
   reportEmailButton: null,
+  reportEmailTooltip: null,
   reportInProgress: null,
   reportSuccess: null,
   reportError: null,
@@ -74,6 +76,7 @@ const accountManager = new AccountManager();
 function initializeElements(): void {
   // Cache all DOM element references with proper type assertions
   elements.reportEmailButton = document.getElementById("reportEmailButton");
+  elements.reportEmailTooltip = document.getElementById("reportEmailTooltip");
   elements.reportInProgress = document.getElementById("reportInProgress");
   elements.reportSuccess = document.getElementById("reportingSuccess");
   elements.reportError = document.getElementById("reportingError");
@@ -116,15 +119,24 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
   switch (state) {
     case UIState.REPORTING:
       elements.reportEmailButton?.setAttribute("disabled", "true");
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Report in progress, please wait...";
+      }
       elements.reportInProgress?.classList.remove("hidden");
       break;
     case UIState.SUCCESS:
       elements.reportEmailButton?.setAttribute("disabled", "true");
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Email reported successfully";
+      }
       elements.reportSuccess?.classList.remove("hidden");
       elements.moveToJunkButton?.classList.remove("hidden");
       break;
     case UIState.ERROR:
       elements.reportEmailButton?.setAttribute("disabled", "false");
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Click to retry reporting the email";
+      }
       elements.reportError?.classList.remove("hidden");
       if (elements.reportErrorMessage) {
         elements.reportErrorMessage.innerText = errorMessage || "Something went wrong";
@@ -132,6 +144,9 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
       break;
     case UIState.IDLE:
       // Everything hidden is the default idle state
+      if (elements.reportEmailTooltip) {
+        elements.reportEmailTooltip.innerText = "Report this email as a phishing or a spam message";
+      }
       break;
   }
 }
