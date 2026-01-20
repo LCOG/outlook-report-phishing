@@ -266,7 +266,6 @@ async function handleReportClick(): Promise<void> {
 
 async function handleMoveToJunkClick(): Promise<void> {
   try {
-    updateUIState(UIState.REPORTING);
     const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
     const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
 
