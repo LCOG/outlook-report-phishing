@@ -292,6 +292,9 @@ async function handleMoveToJunkClick(): Promise<void> {
     }
   } catch (error) {
     console.error("Moving to junk failed:", error);
-    updateUIState(UIState.ERROR, error instanceof Error ? error.message : "Failed to move email");
+    updateUIState(
+      UIState.ERROR,
+      error instanceof Error ? error.message : "Failed to move email to junk"
+    );
   }
 }
