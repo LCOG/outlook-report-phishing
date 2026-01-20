@@ -90,7 +90,11 @@ function initializeElements(): void {
     !elements.progress ||
     !elements.success ||
     !elements.error ||
-    !elements.errorMessage
+    !elements.errorMessage ||
+    !elements.moveToJunkButton ||
+    !elements.reportMessageTypeGroup ||
+    !elements.additionalInfoArea ||
+    !elements.appBody
   ) {
     console.error("Required DOM elements not found");
   }
