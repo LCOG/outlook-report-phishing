@@ -15,8 +15,8 @@
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "dev-server": "webpack serve --mode development",
-    "lint": "office-addin-lint check",
-    "lint:fix": "office-addin-lint fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "prettier": "office-addin-lint prettier",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
@@ -28,7 +28,8 @@
     "start:web": "office-addin-debugging start manifest.xml web",
     "stop": "office-addin-debugging stop manifest.xml",
     "validate": "office-addin-manifest validate manifest.xml",
-    "watch": "webpack --mode development --watch"
+    "watch": "webpack --mode development --watch",
+    "prepare": "husky"
   },
   "dependencies": {
     "@azure/msal-browser": "^3.26.1",
@@ -57,6 +58,8 @@
     "globals": "^17.0.0",
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "office-addin-cli": "^2.0.6",
     "office-addin-debugging": "^6.0.6",
     "office-addin-dev-certs": "^2.0.6",
@@ -77,5 +80,14 @@
   "browserslist": [
     "ie 11"
   ],
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,json,css,md}": [
+      "prettier --write"
+    ]
+  },
   "packageManager": "pnpm@10.27.0+sha512.72d699da16b1179c14ba9e64dc71c9a40988cbdc65c264cb0e489db7de917f20dcf4d64d8723625f2969ba52d4b7e2a1170682d9ac2a5dcaeaab732b7e16f04a"
 }
