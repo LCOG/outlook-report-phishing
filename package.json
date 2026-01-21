@@ -42,9 +42,11 @@
     "regenerator-runtime": "^0.14.1"
   },
   "devDependencies": {
+    "@azure/msal-node": "^5.0.2",
     "@babel/core": "^7.25.2",
     "@babel/preset-typescript": "^7.24.7",
     "@eslint/js": "^9.39.2",
+    "@microsoft/microsoft-graph-types": "^2.43.1",
     "@types/office-js": "^1.0.441",
     "@types/office-runtime": "^1.0.35",
     "@typescript-eslint/eslint-plugin": "^8.53.0",
