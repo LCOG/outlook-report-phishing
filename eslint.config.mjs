@@ -4,7 +4,6 @@ import js from "@eslint/js";
 import tsParser from "@typescript-eslint/parser";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import importPlugin from "eslint-plugin-import";
-import prettier from "eslint-plugin-prettier";
 import prettierConfig from "eslint-config-prettier";
 
 /** @type {import('eslint').Linter.Config[]} */
@@ -42,7 +41,6 @@ export default [
     plugins: {
       "@typescript-eslint": tseslint,
       import: importPlugin,
-      prettier: prettier,
     },
     rules: {
       // Disable base ESLint rules that conflict with TypeScript
@@ -101,9 +99,6 @@ export default [
       // Office Add-in specific: prevent common mistakes
       "no-console": ["warn", { allow: ["warn", "error"] }],
       eqeqeq: ["error", "always"],
-
-      // Prettier integration
-      "prettier/prettier": "error",
 
       // Disable rules that conflict with Prettier
       ...prettierConfig.rules,
