@@ -7,6 +7,8 @@ import {
   createNestablePublicClientApplication,
   type IPublicClientApplication,
   type RedirectRequest,
+  type SilentRequest,
+  type PopupRequest,
 } from "@azure/msal-browser";
 
 import { msalConfig } from "./msalconfig";
@@ -20,26 +22,29 @@ export function getTokenRequest(
   scopes: string[],
   selectAccount: boolean,
   redirectUri?: string
-): RedirectRequest {
-  let additionalProperties: Partial<RedirectRequest> = {};
+): RedirectRequest & SilentRequest & PopupRequest {
+  const request: RedirectRequest & SilentRequest & PopupRequest = {
+    scopes,
+  };
+
   if (selectAccount) {
-    additionalProperties = { prompt: "select_account" };
+    request.prompt = "select_account";
   }
-  if (redirectUri) {
-    additionalProperties.redirectUri = redirectUri;
+
+  if (redirectUri !== undefined && redirectUri !== "") {
+    request.redirectUri = redirectUri;
   }
-  return { scopes, ...additionalProperties };
+
+  return request;
 }
 
-let _publicClientApp: IPublicClientApplication;
+let _publicClientApp: IPublicClientApplication | undefined;
 
 /**
  * Returns the existing public client application. Returns a new public client application if it did not exist.
  * @returns The nested public client application.
  */
-export async function ensurePublicClient() {
-  if (!_publicClientApp) {
-    _publicClientApp = await createNestablePublicClientApplication(msalConfig);
-  }
+export async function ensurePublicClient(): Promise<IPublicClientApplication> {
+  _publicClientApp ??= await createNestablePublicClientApplication(msalConfig);
   return _publicClientApp;
 }

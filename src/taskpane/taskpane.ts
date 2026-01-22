@@ -3,8 +3,6 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global document, Office, console, process, fetch */
-
 import {
   provideFluentDesignSystem,
   fluentButton,
@@ -47,14 +45,11 @@ interface UIElements {
   reportError: HTMLElement | null;
   reportErrorMessage: HTMLElement | null;
   moveToJunkButton: HTMLElement | null;
-  reportMessageTypeGroup: any;
-  additionalInfoArea: any;
+  reportMessageTypeGroup: { value: string } | null;
+  additionalInfoArea: { value: string } | null;
   sideloadMsg: HTMLElement | null;
   appBody: HTMLElement | null;
 }
-
-// State management
-let currentState: UIState = UIState.IDLE;
 
 // Cache DOM elements
 const elements: UIElements = {
@@ -84,8 +79,12 @@ function initializeElements(): void {
   elements.reportError = document.getElementById("reportingError");
   elements.reportErrorMessage = document.getElementById("reportingErrorMessage");
   elements.moveToJunkButton = document.getElementById("moveToJunkButton");
-  elements.reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup");
-  elements.additionalInfoArea = document.getElementById("additionalInfo");
+  elements.reportMessageTypeGroup = document.getElementById(
+    "reportMessageTypeGroup"
+  ) as unknown as { value: string } | null;
+  elements.additionalInfoArea = document.getElementById("additionalInfo") as unknown as {
+    value: string;
+  } | null;
   elements.sideloadMsg = document.getElementById("sideload-msg");
   elements.appBody = document.getElementById("app-body");
 
@@ -111,8 +110,6 @@ function initializeElements(): void {
  * @param errorMessage Optional error message for ERROR state
  */
 function updateUIState(state: UIState, errorMessage: string = ""): void {
-  currentState = state;
-
   // Hides all reporting result elements
   const results = [elements.reportInProgress, elements.reportSuccess, elements.reportError];
   results.forEach((el) => el?.classList.add("hidden"));
@@ -154,7 +151,7 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
 }
 
 // Initialize when Office is ready.
-Office.onReady((info) => {
+void Office.onReady(async (info) => {
   if (info.host === Office.HostType.Outlook) {
     initializeElements();
 
@@ -169,7 +166,7 @@ Office.onReady((info) => {
     }
 
     // Initialize MSAL.
-    accountManager.initialize();
+    await accountManager.initialize();
     updateUIState(UIState.IDLE);
   }
 });
@@ -183,23 +180,22 @@ async function getUserData(): Promise<User> {
   return graphClient.getUser();
 }
 
-async function logPhishingReport(emailAddress: string, message: any) {
+async function logPhishingReport(emailAddress: string, message: Message): Promise<void> {
   try {
-    const response = await fetch(reportPhishApiUrl, {
+    await fetch(reportPhishApiUrl as string, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         employee_email: emailAddress.toLowerCase(),
-        email_message: message.body.content,
+        email_message: message.body?.content ?? "No content",
       }),
     });
-
-    const result = await response.json();
-    console.log("Phishing report logged:", result);
   } catch (error) {
-    console.error("Failed to log phishing report:", error.message);
+    if (error instanceof Error) {
+      console.error("Failed to log phishing report:", error.message);
+    }
   }
 }
 
@@ -243,9 +239,9 @@ async function handleReportClick(): Promise<void> {
     await logPhishingReport(mail, currentMessageBody);
 
     // Set body for the forwarding request
-    const reportType = elements.reportMessageTypeGroup?.value || "unknown";
-    const additionalInfo = elements.additionalInfoArea?.value || "";
-    const forwardComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in. ${additionalInfo ? `\n\nAdditional details: ${additionalInfo}` : ""}`;
+    const reportType = elements.reportMessageTypeGroup?.value ?? "unknown";
+    const additionalInfo = elements.additionalInfoArea?.value ?? "";
+    const forwardComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in. ${additionalInfo !== "" ? `\n\nAdditional details: ${additionalInfo}` : ""}`;
 
     const forwardBody = {
       comment: forwardComment,
@@ -260,7 +256,7 @@ async function handleReportClick(): Promise<void> {
     };
 
     await graphClient.forwardMessage(msgId, forwardBody);
-      updateUIState(UIState.SUCCESS);
+    updateUIState(UIState.SUCCESS);
   } catch (error) {
     console.error("Report clicking failed:", error);
     updateUIState(
@@ -286,7 +282,7 @@ async function handleMoveToJunkClick(): Promise<void> {
 
     const graphClient = new GraphClient(accessToken);
     await graphClient.moveMessage(msgId, "junkemail");
-      Office.context.ui.closeContainer();
+    Office.context.ui.closeContainer();
   } catch (error) {
     console.error("Moving to junk failed:", error);
     updateUIState(

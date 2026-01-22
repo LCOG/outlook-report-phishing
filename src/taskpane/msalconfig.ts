@@ -1,16 +1,15 @@
+/* eslint-disable no-console */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 // This file provides the default MSAL configuration for the add-in project.
 
-import { LogLevel } from "@azure/msal-browser";
+import { LogLevel, type Configuration } from "@azure/msal-browser";
 
 import { createLocalUrl } from "./util";
 
-/* global console */
-
 export const clientId = "81fbcf38-230e-421d-b5fd-35ad67e8db7d";
-export const msalConfig = {
+export const msalConfig: Configuration = {
   auth: {
     clientId,
     redirectUri: createLocalUrl("auth.html"),
