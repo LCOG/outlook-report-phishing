@@ -5,6 +5,7 @@
 
 import { createStandardPublicClientApplication } from "@azure/msal-browser";
 
+import { ensureOfficeReady } from "../../utils/office-type-guards";
 import { getTokenRequest } from "../msalcommon";
 import { defaultScopes, msalConfig } from "../msalconfig";
 import { createLocalUrl } from "../util";
@@ -19,7 +20,7 @@ function getQueryParameter(param: string): string | null {
 }
 
 async function sendDialogMessage(message: string): Promise<void> {
-  await Office.onReady();
+  await ensureOfficeReady();
   Office.context.ui.messageParent(message);
 }
 async function returnResult(

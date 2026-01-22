@@ -16,6 +16,8 @@ import {
 
 import { AccountManager } from "./authConfig";
 import { GraphClient } from "../services/graph-client";
+import { OfficeMailService } from "../services/office-mail";
+import { ensureOfficeReady } from "../utils/office-type-guards";
 
 import type { Message, User } from "@microsoft/microsoft-graph-types";
 
@@ -69,6 +71,7 @@ const elements: UIElements = {
 const reportPhishApiUrl = process.env.API_URL;
 const forwardEmail = process.env.FORWARD_TO;
 const accountManager = new AccountManager();
+const officeMailService = new OfficeMailService();
 
 function initializeElements(): void {
   // Cache all DOM element references with proper type assertions
@@ -151,8 +154,9 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
 }
 
 // Initialize when Office is ready.
-void Office.onReady(async (info) => {
-  if (info.host === Office.HostType.Outlook) {
+void (async () => {
+  try {
+    await ensureOfficeReady();
     initializeElements();
 
     if (elements.sideloadMsg) elements.sideloadMsg.style.display = "none";
@@ -168,8 +172,10 @@ void Office.onReady(async (info) => {
     // Initialize MSAL.
     await accountManager.initialize();
     updateUIState(UIState.IDLE);
+  } catch (error) {
+    console.error("Office initialization failed:", error);
   }
-});
+})();
 
 /**
  * Gets the user's name and email
@@ -205,21 +211,7 @@ async function handleReportClick(): Promise<void> {
 
     const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
 
-    // The type of Office.context.mailbox.item can vary depending on the context
-    // so we explicitly assign the expected type here.
-    // TODO: Note that this is a suspected phishing email, and any links and
-    // attachments on it need to be treated as malicious.
-    // Research best practices on handling such emails.
-    const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
-
-    if (!msg.itemId) {
-      throw new Error("Failed to retrieve current email from Office context.");
-    }
-
-    const msgId = Office.context.mailbox.convertToRestId(
-      msg.itemId,
-      Office.MailboxEnums.RestVersion.v2_0
-    );
+    const msgId = await officeMailService.getRestItemId();
     const user = await getUserData();
     const mail = user.mail ?? "";
     const displayName = user.displayName ?? "User";
@@ -269,16 +261,7 @@ async function handleReportClick(): Promise<void> {
 async function handleMoveToJunkClick(): Promise<void> {
   try {
     const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
-    const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
-
-    if (!msg.itemId) {
-      throw new Error("Failed to retrieve current email from Office context.");
-    }
-
-    const msgId = Office.context.mailbox.convertToRestId(
-      msg.itemId,
-      Office.MailboxEnums.RestVersion.v2_0
-    );
+    const msgId = await officeMailService.getRestItemId();
 
     const graphClient = new GraphClient(accessToken);
     await graphClient.moveMessage(msgId, "junkemail");
