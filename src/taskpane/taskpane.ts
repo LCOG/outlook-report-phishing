@@ -17,7 +17,9 @@ import {
 } from "@fluentui/web-components";
 
 import { AccountManager } from "./authConfig";
-import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
+import { GraphClient } from "../services/graph-client";
+
+import type { Message, User } from "@microsoft/microsoft-graph-types";
 
 provideFluentDesignSystem().register(
   fluentButton(),
@@ -175,13 +177,10 @@ Office.onReady((info) => {
 /**
  * Gets the user's name and email
  */
-async function getUserData() {
+async function getUserData(): Promise<User> {
   const accessToken = await accountManager.ssoGetAccessToken(["user.read"]);
-  const response: { displayName: string; mail: string } = await makeGraphRequest({
-    accessToken,
-    path: "/me",
-  });
-  return response;
+  const graphClient = new GraphClient(accessToken);
+  return graphClient.getUser();
 }
 
 async function logPhishingReport(emailAddress: string, message: any) {
@@ -225,15 +224,21 @@ async function handleReportClick(): Promise<void> {
       msg.itemId,
       Office.MailboxEnums.RestVersion.v2_0
     );
-    const { displayName, mail } = await getUserData();
+    const user = await getUserData();
+    const mail = user.mail ?? "";
+    const displayName = user.displayName ?? "User";
+
+    const graphClient = new GraphClient(accessToken);
 
     // Get the current email subject and body via Graph API
-    const currentMessageBody = await makeGraphRequest({
-      accessToken: accessToken,
-      path: `/me/messages/${msgId}`,
-      queryParams: "?$select=subject,body",
-      additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
-    });
+    const currentMessageBody = await graphClient.getMessage(msgId, "?$select=subject,body");
+
+    // Set Prefer header if needed, but our GraphClient doesn't support additional headers in getMessage yet
+    // I will add it or use request<Message> directly if I need custom headers.
+    // For now, let's just use request<Message> for this one to keep the Prefer header.
+    // const currentMessageBody = await graphClient.get<Message>(`/me/messages/${msgId}?$select=subject,body`, {
+    //   headers: { Prefer: 'outlook.body-content-type="text"' }
+    // });
 
     await logPhishingReport(mail, currentMessageBody);
 
@@ -254,24 +259,8 @@ async function handleReportClick(): Promise<void> {
       ],
     };
 
-    const forwardResult = await makePostGraphRequest({
-      accessToken,
-      path: `/me/messages/${msgId}/forward`,
-      additionalHeaders: { "Content-Type": "application/json" },
-      body: JSON.stringify(forwardBody),
-    });
-
-    if (forwardResult.ok) {
+    await graphClient.forwardMessage(msgId, forwardBody);
       updateUIState(UIState.SUCCESS);
-      // // Auto-dismiss success message after 3 seconds
-      // setTimeout(() => {
-      //   if (currentState === UIState.SUCCESS) {
-      //     updateUIState(UIState.IDLE);
-      //   }
-      // }, 3000);
-    } else {
-      throw new Error(`HTTP ${forwardResult.status} ${forwardResult.statusText}`);
-    }
   } catch (error) {
     console.error("Report clicking failed:", error);
     updateUIState(
@@ -295,18 +284,9 @@ async function handleMoveToJunkClick(): Promise<void> {
       Office.MailboxEnums.RestVersion.v2_0
     );
 
-    const response = await makePostGraphRequest({
-      accessToken,
-      path: `/me/messages/${msgId}/move`,
-      additionalHeaders: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destinationId: "junkemail" }),
-    });
-
-    if (response.ok) {
+    const graphClient = new GraphClient(accessToken);
+    await graphClient.moveMessage(msgId, "junkemail");
       Office.context.ui.closeContainer();
-    } else {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
   } catch (error) {
     console.error("Moving to junk failed:", error);
     updateUIState(
