@@ -16,6 +16,7 @@ export default [
       "**/public/**",
       "**/manifest-configurations/**",
       "webpack.config.js",
+      "eslint.config.mjs",
     ],
   },
   js.configs.recommended,
