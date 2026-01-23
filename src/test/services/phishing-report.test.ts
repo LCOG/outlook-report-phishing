@@ -43,6 +43,7 @@ function createMockGraphClient(): MockGraphClient {
 describe("PhishingReportService", () => {
   let service: PhishingReportService;
   let mockGraphClient: MockGraphClient;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   const TEST_API_URL = "https://test-api.example.com/report";
 
@@ -52,9 +53,13 @@ describe("PhishingReportService", () => {
     service = new PhishingReportService(mockGraphClient as unknown as GraphClient, TEST_API_URL);
 
     global.fetch = vi.fn();
+
+    // Suppress console.error output during tests
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    consoleErrorSpy.mockRestore();
     vi.clearAllMocks();
   });
 
@@ -213,7 +218,6 @@ describe("PhishingReportService", () => {
     });
 
     it("logs error to console when API call fails", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       vi.mocked(global.fetch).mockResolvedValue({
         ok: false,
         status: 500,
@@ -222,11 +226,10 @@ describe("PhishingReportService", () => {
 
       await service.logPhishingReport("user@example.com", mockMessage);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
         "Failed to log phishing report to backend:",
         expect.any(Error)
       );
-      consoleSpy.mockRestore();
     });
   });
 
@@ -390,13 +393,14 @@ describe("PhishingReportService", () => {
     });
 
     it("logs error to console when reporting fails", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       mockGraphClient.getMessage.mockRejectedValue(new Error("API failed"));
 
       await service.reportPhishing(reportOptions);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Failed to report phishing email:", "API failed");
-      consoleSpy.mockRestore();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to report phishing email:",
+        "API failed"
+      );
     });
 
     it("successfully reports email with all details", async () => {
