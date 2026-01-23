@@ -3,8 +3,6 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global document, Office, console, process, fetch */
-
 import {
   provideFluentDesignSystem,
   fluentButton,
@@ -17,7 +15,12 @@ import {
 } from "@fluentui/web-components";
 
 import { AccountManager } from "./authConfig";
-import { makeGraphRequest, makePostGraphRequest } from "./msgraph-helper";
+import { GraphClient } from "../services/graph-client";
+import { OfficeMailService } from "../services/office-mail";
+import { PhishingReportService } from "../services/phishing-report";
+import { ensureOfficeReady } from "../utils/office-type-guards";
+
+import type { User } from "@microsoft/microsoft-graph-types";
 
 provideFluentDesignSystem().register(
   fluentButton(),
@@ -45,14 +48,11 @@ interface UIElements {
   reportError: HTMLElement | null;
   reportErrorMessage: HTMLElement | null;
   moveToJunkButton: HTMLElement | null;
-  reportMessageTypeGroup: any;
-  additionalInfoArea: any;
+  reportMessageTypeGroup: { value: string } | null;
+  additionalInfoArea: { value: string } | null;
   sideloadMsg: HTMLElement | null;
   appBody: HTMLElement | null;
 }
-
-// State management
-let currentState: UIState = UIState.IDLE;
 
 // Cache DOM elements
 const elements: UIElements = {
@@ -72,6 +72,7 @@ const elements: UIElements = {
 const reportPhishApiUrl = process.env.API_URL;
 const forwardEmail = process.env.FORWARD_TO;
 const accountManager = new AccountManager();
+const officeMailService = new OfficeMailService();
 
 function initializeElements(): void {
   // Cache all DOM element references with proper type assertions
@@ -82,8 +83,12 @@ function initializeElements(): void {
   elements.reportError = document.getElementById("reportingError");
   elements.reportErrorMessage = document.getElementById("reportingErrorMessage");
   elements.moveToJunkButton = document.getElementById("moveToJunkButton");
-  elements.reportMessageTypeGroup = document.getElementById("reportMessageTypeGroup");
-  elements.additionalInfoArea = document.getElementById("additionalInfo");
+  elements.reportMessageTypeGroup = document.getElementById(
+    "reportMessageTypeGroup"
+  ) as unknown as { value: string } | null;
+  elements.additionalInfoArea = document.getElementById("additionalInfo") as unknown as {
+    value: string;
+  } | null;
   elements.sideloadMsg = document.getElementById("sideload-msg");
   elements.appBody = document.getElementById("app-body");
 
@@ -109,8 +114,6 @@ function initializeElements(): void {
  * @param errorMessage Optional error message for ERROR state
  */
 function updateUIState(state: UIState, errorMessage: string = ""): void {
-  currentState = state;
-
   // Hides all reporting result elements
   const results = [elements.reportInProgress, elements.reportSuccess, elements.reportError];
   results.forEach((el) => el?.classList.add("hidden"));
@@ -152,8 +155,9 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
 }
 
 // Initialize when Office is ready.
-Office.onReady((info) => {
-  if (info.host === Office.HostType.Outlook) {
+void (async () => {
+  try {
+    await ensureOfficeReady();
     initializeElements();
 
     if (elements.sideloadMsg) elements.sideloadMsg.style.display = "none";
@@ -167,113 +171,56 @@ Office.onReady((info) => {
     }
 
     // Initialize MSAL.
-    accountManager.initialize();
+    await accountManager.initialize();
     updateUIState(UIState.IDLE);
+  } catch (error) {
+    console.error("Office initialization failed:", error);
   }
-});
+})();
 
 /**
  * Gets the user's name and email
  */
-async function getUserData() {
+async function getUserData(): Promise<User> {
   const accessToken = await accountManager.ssoGetAccessToken(["user.read"]);
-  const response: { displayName: string; mail: string } = await makeGraphRequest({
-    accessToken,
-    path: "/me",
-  });
-  return response;
-}
-
-async function logPhishingReport(emailAddress: string, message: any) {
-  try {
-    const response = await fetch(reportPhishApiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        employee_email: emailAddress.toLowerCase(),
-        email_message: message.body.content,
-      }),
-    });
-
-    const result = await response.json();
-    console.log("Phishing report logged:", result);
-  } catch (error) {
-    console.error("Failed to log phishing report:", error.message);
-  }
+  const graphClient = new GraphClient(accessToken);
+  return graphClient.getUser();
 }
 
 async function handleReportClick(): Promise<void> {
   try {
     updateUIState(UIState.REPORTING);
 
+    // Get dependencies
     const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
+    const messageId = await officeMailService.getRestItemId();
+    const user = await getUserData();
 
-    // The type of Office.context.mailbox.item can vary depending on the context
-    // so we explicitly assign the expected type here.
-    // TODO: Note that this is a suspected phishing email, and any links and
-    // attachments on it need to be treated as malicious.
-    // Research best practices on handling such emails.
-    const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
+    // Create services
+    const graphClient = new GraphClient(accessToken);
+    const phishingService = new PhishingReportService(graphClient, reportPhishApiUrl as string);
 
-    if (!msg.itemId) {
-      throw new Error("Failed to retrieve current email from Office context.");
-    }
+    // Get report details from UI
+    const reportType = elements.reportMessageTypeGroup?.value ?? "unknown";
+    const additionalInfo = elements.additionalInfoArea?.value ?? "";
 
-    const msgId = Office.context.mailbox.convertToRestId(
-      msg.itemId,
-      Office.MailboxEnums.RestVersion.v2_0
-    );
-    const { displayName, mail } = await getUserData();
-
-    // Get the current email subject and body via Graph API
-    const currentMessageBody = await makeGraphRequest({
-      accessToken: accessToken,
-      path: `/me/messages/${msgId}`,
-      queryParams: "?$select=subject,body",
-      additionalHeaders: { Prefer: 'outlook.body-content-type="text"' },
+    // Forward email and log report in Team App
+    const result = await phishingService.reportPhishing({
+      messageId,
+      user,
+      reportType,
+      additionalInfo,
+      forwardToEmail: forwardEmail as string,
     });
 
-    await logPhishingReport(mail, currentMessageBody);
-
-    // Set body for the forwarding request
-    const reportType = elements.reportMessageTypeGroup?.value || "unknown";
-    const additionalInfo = elements.additionalInfoArea?.value || "";
-    const forwardComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in. ${additionalInfo ? `\n\nAdditional details: ${additionalInfo}` : ""}`;
-
-    const forwardBody = {
-      comment: forwardComment,
-      toRecipients: [
-        {
-          emailAddress: {
-            name: "LCOG IT",
-            address: forwardEmail,
-          },
-        },
-      ],
-    };
-
-    const forwardResult = await makePostGraphRequest({
-      accessToken,
-      path: `/me/messages/${msgId}/forward`,
-      additionalHeaders: { "Content-Type": "application/json" },
-      body: JSON.stringify(forwardBody),
-    });
-
-    if (forwardResult.ok) {
+    // Update UI based on result
+    if (result.success) {
       updateUIState(UIState.SUCCESS);
-      // // Auto-dismiss success message after 3 seconds
-      // setTimeout(() => {
-      //   if (currentState === UIState.SUCCESS) {
-      //     updateUIState(UIState.IDLE);
-      //   }
-      // }, 3000);
     } else {
-      throw new Error(`HTTP ${forwardResult.status} ${forwardResult.statusText}`);
+      updateUIState(UIState.ERROR, result.error ?? "Failed to report email");
     }
   } catch (error) {
-    console.error("Report clicking failed:", error);
+    console.error("Report failed:", error);
     updateUIState(
       UIState.ERROR,
       error instanceof Error ? error.message : "Reporting the email failed"
@@ -284,29 +231,13 @@ async function handleReportClick(): Promise<void> {
 async function handleMoveToJunkClick(): Promise<void> {
   try {
     const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
-    const msg: Office.MessageRead = Office.context.mailbox.item as Office.MessageRead;
+    const messageId = await officeMailService.getRestItemId();
 
-    if (!msg.itemId) {
-      throw new Error("Failed to retrieve current email from Office context.");
-    }
+    const graphClient = new GraphClient(accessToken);
+    const phishingService = new PhishingReportService(graphClient, reportPhishApiUrl as string);
 
-    const msgId = Office.context.mailbox.convertToRestId(
-      msg.itemId,
-      Office.MailboxEnums.RestVersion.v2_0
-    );
-
-    const response = await makePostGraphRequest({
-      accessToken,
-      path: `/me/messages/${msgId}/move`,
-      additionalHeaders: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destinationId: "junkemail" }),
-    });
-
-    if (response.ok) {
-      Office.context.ui.closeContainer();
-    } else {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
+    await phishingService.moveToJunk(messageId);
+    Office.context.ui.closeContainer();
   } catch (error) {
     console.error("Moving to junk failed:", error);
     updateUIState(

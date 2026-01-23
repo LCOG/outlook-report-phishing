@@ -3,10 +3,9 @@
 
 /* This file handls MSAL auth for the fallback dialog page. */
 
-/* global Office, window, URLSearchParams */
-
 import { createStandardPublicClientApplication } from "@azure/msal-browser";
 
+import { ensureOfficeReady } from "../../utils/office-type-guards";
 import { getTokenRequest } from "../msalcommon";
 import { defaultScopes, msalConfig } from "../msalconfig";
 import { createLocalUrl } from "../util";
@@ -15,29 +14,29 @@ import type { AuthDialogResult } from "../authConfig";
 import type { AuthenticationResult, IPublicClientApplication } from "@azure/msal-browser";
 
 // read querystring parameter
-function getQueryParameter(param: string) {
+function getQueryParameter(param: string): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get(param);
 }
 
-async function sendDialogMessage(message: string) {
-  await Office.onReady();
+async function sendDialogMessage(message: string): Promise<void> {
+  await ensureOfficeReady();
   Office.context.ui.messageParent(message);
 }
 async function returnResult(
   publicClientApp: IPublicClientApplication,
   authResult: AuthenticationResult
-) {
+): Promise<void> {
   publicClientApp.setActiveAccount(authResult.account);
 
   const authDialogResult: AuthDialogResult = {
     accessToken: authResult.accessToken,
   };
 
-  sendDialogMessage(JSON.stringify(authDialogResult));
+  await sendDialogMessage(JSON.stringify(authDialogResult));
 }
 
-export async function initializeMsal() {
+export async function initializeMsal(): Promise<void> {
   // Use standard Public Client instead of nested because this is a fallback path when nested app authentication isn't available.
   const publicClientApp = await createStandardPublicClientApplication(msalConfig);
   try {
@@ -47,7 +46,7 @@ export async function initializeMsal() {
       });
       return;
     } else if (getQueryParameter("close") === "1") {
-      sendDialogMessage("close");
+      await sendDialogMessage("close");
       return;
     }
     const result = await publicClientApp.handleRedirectPromise();
@@ -55,11 +54,11 @@ export async function initializeMsal() {
     if (result) {
       return returnResult(publicClientApp, result);
     }
-  } catch (ex: any) {
+  } catch (ex: unknown) {
     const authDialogResult: AuthDialogResult = {
-      error: ex.name,
+      error: ex instanceof Error ? ex.name : "UnknownError",
     };
-    sendDialogMessage(JSON.stringify(authDialogResult));
+    await sendDialogMessage(JSON.stringify(authDialogResult));
     return;
   }
 
@@ -68,17 +67,15 @@ export async function initializeMsal() {
       const result = await publicClientApp.acquireTokenSilent(
         getTokenRequest(defaultScopes, false)
       );
-      if (result) {
-        return returnResult(publicClientApp, result);
-      }
+      return returnResult(publicClientApp, result);
     }
   } catch {
     /* empty */
   }
 
-  publicClientApp.acquireTokenRedirect(
+  void publicClientApp.acquireTokenRedirect(
     getTokenRequest(defaultScopes, true, createLocalUrl("dialog.html"))
   );
 }
 
-initializeMsal();
+void initializeMsal();
