@@ -17,9 +17,10 @@ import {
 import { AccountManager } from "./authConfig";
 import { GraphClient } from "../services/graph-client";
 import { OfficeMailService } from "../services/office-mail";
+import { PhishingReportService } from "../services/phishing-report";
 import { ensureOfficeReady } from "../utils/office-type-guards";
 
-import type { Message, User } from "@microsoft/microsoft-graph-types";
+import type { User } from "@microsoft/microsoft-graph-types";
 
 provideFluentDesignSystem().register(
   fluentButton(),
@@ -186,71 +187,40 @@ async function getUserData(): Promise<User> {
   return graphClient.getUser();
 }
 
-async function logPhishingReport(emailAddress: string, message: Message): Promise<void> {
-  try {
-    await fetch(reportPhishApiUrl as string, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        employee_email: emailAddress.toLowerCase(),
-        email_message: message.body?.content ?? "No content",
-      }),
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Failed to log phishing report:", error.message);
-    }
-  }
-}
-
 async function handleReportClick(): Promise<void> {
   try {
     updateUIState(UIState.REPORTING);
 
+    // Get dependencies
     const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
-
-    const msgId = await officeMailService.getRestItemId();
+    const messageId = await officeMailService.getRestItemId();
     const user = await getUserData();
-    const mail = user.mail ?? "";
-    const displayName = user.displayName ?? "User";
 
+    // Create services
     const graphClient = new GraphClient(accessToken);
+    const phishingService = new PhishingReportService(graphClient, reportPhishApiUrl as string);
 
-    // Get the current email subject and body via Graph API
-    const currentMessageBody = await graphClient.getMessage(msgId, "?$select=subject,body");
-
-    // Set Prefer header if needed, but our GraphClient doesn't support additional headers in getMessage yet
-    // I will add it or use request<Message> directly if I need custom headers.
-    // For now, let's just use request<Message> for this one to keep the Prefer header.
-    // const currentMessageBody = await graphClient.get<Message>(`/me/messages/${msgId}?$select=subject,body`, {
-    //   headers: { Prefer: 'outlook.body-content-type="text"' }
-    // });
-
-    await logPhishingReport(mail, currentMessageBody);
-
-    // Set body for the forwarding request
+    // Get report details from UI
     const reportType = elements.reportMessageTypeGroup?.value ?? "unknown";
     const additionalInfo = elements.additionalInfoArea?.value ?? "";
-    const forwardComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in. ${additionalInfo !== "" ? `\n\nAdditional details: ${additionalInfo}` : ""}`;
 
-    const forwardBody = {
-      comment: forwardComment,
-      toRecipients: [
-        {
-          emailAddress: {
-            name: "LCOG IT",
-            address: forwardEmail,
-          },
-        },
-      ],
-    };
+    // Forward email and log report in Team App
+    const result = await phishingService.reportPhishing({
+      messageId,
+      user,
+      reportType,
+      additionalInfo,
+      forwardToEmail: forwardEmail as string,
+    });
 
-    await graphClient.forwardMessage(msgId, forwardBody);
-    updateUIState(UIState.SUCCESS);
+    // Update UI based on result
+    if (result.success) {
+      updateUIState(UIState.SUCCESS);
+    } else {
+      updateUIState(UIState.ERROR, result.error ?? "Failed to report email");
+    }
   } catch (error) {
-    console.error("Report clicking failed:", error);
+    console.error("Report failed:", error);
     updateUIState(
       UIState.ERROR,
       error instanceof Error ? error.message : "Reporting the email failed"
@@ -261,10 +231,12 @@ async function handleReportClick(): Promise<void> {
 async function handleMoveToJunkClick(): Promise<void> {
   try {
     const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
-    const msgId = await officeMailService.getRestItemId();
+    const messageId = await officeMailService.getRestItemId();
 
     const graphClient = new GraphClient(accessToken);
-    await graphClient.moveMessage(msgId, "junkemail");
+    const phishingService = new PhishingReportService(graphClient, reportPhishApiUrl as string);
+
+    await phishingService.moveToJunk(messageId);
     Office.context.ui.closeContainer();
   } catch (error) {
     console.error("Moving to junk failed:", error);
