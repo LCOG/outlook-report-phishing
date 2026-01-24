@@ -6,7 +6,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const Dotenv = require("dotenv-webpack");
 
 const urlDev = "https://localhost:3000/";
-const urlProd = "https://www.contoso.com/"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
+// Tentative production URL
+const urlProd = "https://reportphish.lcog-or.gov/";
 
 async function getHttpsOptions() {
   const httpsOptions = await devCerts.getHttpsServerOptions();
@@ -83,6 +84,8 @@ module.exports = async (env, options) => {
               if (dev) {
                 return content;
               } else {
+                // When running webpack --mode production, replace the localhost
+                // URL in the manifest file with the production URL
                 return content.toString().replace(new RegExp(urlDev, "g"), urlProd);
               }
             },
