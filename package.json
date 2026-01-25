@@ -1,9 +1,9 @@
 {
-  "name": "office-addin-taskpane",
-  "version": "0.0.1",
+  "name": "lcog-report-phish",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OfficeDev/Office-Addin-TaskPane.git"
+    "url": "https://github.com/LCOG/outlook-report-phishing"
   },
   "license": "MIT",
   "config": {
