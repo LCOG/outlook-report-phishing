@@ -8,7 +8,11 @@ import { LogLevel, type Configuration } from "@azure/msal-browser";
 
 import { createLocalUrl } from "./util";
 
-export const clientId = "81fbcf38-230e-421d-b5fd-35ad67e8db7d";
+// Entra app registration client IDs for development and production
+export const clientIdDev = "81fbcf38-230e-421d-b5fd-35ad67e8db7d";
+export const clientIdProd = "replace_with_production_app_registration_client_id";
+export const clientId = process.env.NODE_ENV === "production" ? clientIdProd : clientIdDev;
+
 export const msalConfig: Configuration = {
   auth: {
     clientId,
