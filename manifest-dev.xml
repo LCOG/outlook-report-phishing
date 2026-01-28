@@ -2,12 +2,12 @@
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
   <Id>33f1ce9e-8a9f-4164-8d4b-16d52404404d</Id>
   <Version>1.0.1</Version>
-  <ProviderName>LCOG</ProviderName>
+  <ProviderName>Lane Council of Governments</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="LCOG Report Phish"/>
+  <DisplayName DefaultValue="LCOG Report Phish (DEV)"/>
   <Description DefaultValue="Report phishing emails to LCOG IT"/>
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
+  <IconUrl DefaultValue="https://localhost:3000/assets/rp-icon-retouch-80.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/rp-icon-retouch-256.png"/>
   <SupportUrl DefaultValue="https://www.lcog-or.gov/intranet/page/info-web-security"/>
   <AppDomains>
     <AppDomain>https://www.lcog-or.gov</AppDomain>
@@ -69,9 +69,9 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
