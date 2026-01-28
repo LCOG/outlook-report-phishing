@@ -20,7 +20,7 @@ for implementing an Outlook add-in with SSO using nested app authentication.
 
 ## Developing the add-in
 
-To develop the add-in, run the development server.
+Start by cloning the repository and installing dependencies:
 
 ```sh
 # Clone the repository
@@ -29,50 +29,48 @@ cd outlook-report-phishing
 # Enable pnpm and install dependencies
 corepack enable pnpm
 pnpm install
+```
+
+Following the patterns in `.env.example`, create a file called
+`.env.development`. Then run the development server:
+
+```sh
 # Start the development server
 pnpm run dev-server
 ```
 
-Open Outlook and select a message. You should be able to open the add-in from
-the apps menu in the ribbon.
+`webpack` builds the development bundle and starts a development server at
+`https://localhost:3000`.
 
-For testing the reporting integration to Team App, run the Team App backend
-locally.
+- Open Outlook and select a message. You should be able to open the add-in from
+  the apps menu in the ribbon.
 
-## Choose a manifest type
+- For testing the reporting integration to Team App, run the Team App backend
+  locally.
 
-By default, the sample uses an add-in only manifest. However, you can switch
-the project between the add-in only manifest and the unified manifest. For more
-information about the differences between them, see [Office Add-ins
-manifest](https://learn.microsoft.com/en-us/office/dev/add-ins/develop/add-in-manifests).
+Since Outlook add-ins are required to communicate over HTTPS even when run on
+localhost, webpack creates self-signed certificates when first running the
+development server. You should also see a prompt to allow installing them in the
+OS trust store.
 
-### To switch to the Unified manifest for Microsoft 365
+## Deploying to production
 
-Copy all files from the **manifest-configurations/unified** subfolder to the
-sample's root folder, replacing any existing files that have the same names. We
-recommend that you delete the **manifest.xml** file from the root folder, so
-only files needed for the unified manifest are present in the root.
+Following the patterns in `.env.example`, create a file called `.env.production`
+and run `pnpm build`. This builds the production bundle in the `/dist`
+directory.
 
-### To switch back to the Add-in only manifest
+To deploy the bundle to production, upload it to the `reportphish.lcog-or.gov`
+S3 bucket.
 
-If you want to switch back to the add-in only manifest, copy the files in the
-**manifest-configurations/add-in-only** subfolder to the sample's root folder.
-We recommend that you delete the **manifest.json** file from the root folder.
+## Add-in manifest files
 
-## Debugging steps
+The project has two manifest files: `manifest-dev.xml` and `manifest-prod.xml`.
+These are used for two separate custom app deployments in Microsoft 365 admin
+center. The development version is deployed to a limited set of users, and the
+production version to the entire organization.
 
-You can debug the sample by opening the project in VS Code.
+Based on `NODE_ENV`, webpack copies the corresponding manifest file to the
+output bundle.
 
-1. Select the **Run and Debug** icon in the **Activity Bar** on the side of VS
-   Code. You can also use the keyboard shortcut
-   <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>.
-1. Select the launch configuration you want from the **Configuration dropdown**
-   in the **Run and Debug** view. For example, **Outlook Desktop (Edge
-   Chromium)**.
-1. Start your debug session with **F5**, or **Run** > **Start Debugging**.
-
-For more information on debugging with VS Code, see
-[Debugging](https://code.visualstudio.com/Docs/editor/debugging). For more
-information on debugging Office Add-ins in VS Code, see [Debug Office Add-ins
-on Windows using Visual Studio Code and Microsoft Edge WebView2
-(Chromium-based)](https://learn.microsoft.com/office/dev/add-ins/testing/debug-desktop-using-edge-chromium)
+When making changes to the manifest files, increment the version number and
+upload the updated manifest in the admin center.
