@@ -60,7 +60,8 @@ and run `pnpm build`. This builds the production bundle in the `/dist`
 directory.
 
 To deploy the bundle to production, upload it to the `reportphish.lcog-or.gov`
-S3 bucket.
+S3 bucket. Then create an invalidation for the CloudFront distribution to ensure
+the new version is served.
 
 ## Add-in manifest files
 
