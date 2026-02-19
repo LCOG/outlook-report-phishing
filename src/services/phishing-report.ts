@@ -70,7 +70,7 @@ export class PhishingReportService {
         },
         body: JSON.stringify({
           employee_email: employeeEmail.toLowerCase(),
-          email_message: message.body?.content ?? "No content",
+          email_message: message ?? "No message",
         }),
       });
 
@@ -91,7 +91,14 @@ export class PhishingReportService {
   async reportPhishing(options: ReportPhishingOptions): Promise<PhishingReportResult> {
     try {
       // Get the original message content
-      const message = await this.graphClient.getMessage(options.messageId, "?$select=subject,body");
+      const messageOptions = [
+        'receivedDateTime', 'sentDateTime', 'hasAttachments', 'subject', 'body',
+        'sender', 'from', 'toRecipients', 'ccRecipients', 'bccRecipients',
+        'replyTo', 'internetMessageHeaders'
+      ];
+      const message = await this.graphClient.getMessage(
+        options.messageId, "?$select=" + messageOptions.join(",")
+      );
 
       // Log to Team App API (non-blocking - won't fail the operation)
       await this.logPhishingReport(options.user.mail ?? "", message);
