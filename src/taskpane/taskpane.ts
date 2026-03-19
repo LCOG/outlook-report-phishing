@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
- * See LICENSE in the project root for license information.
+ * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the
+ * MIT license. See LICENSE in the project root for license information.
  */
 
 import {
@@ -48,8 +48,8 @@ interface UIElements {
   reportError: HTMLElement | null;
   reportErrorMessage: HTMLElement | null;
   moveToJunkButton: HTMLElement | null;
-  reportMessageTypeGroup: { value: string } | null;
-  additionalInfoArea: { value: string } | null;
+  reportMessageTypeGroup: (HTMLElement & { value: string }) | null;
+  additionalInfoArea: (HTMLElement & { value: string }) | null;
   sideloadMsg: HTMLElement | null;
   appBody: HTMLElement | null;
 }
@@ -74,6 +74,13 @@ const forwardEmail = process.env.FORWARD_TO;
 const accountManager = new AccountManager();
 const officeMailService = new OfficeMailService();
 
+function updateActionButtons(): void {
+  const isSpamSelected = elements.reportMessageTypeGroup?.value === "spam";
+  elements.additionalInfoArea?.classList.toggle("hidden", isSpamSelected);
+  elements.reportEmailButton?.classList.toggle("hidden", isSpamSelected);
+  elements.moveToJunkButton?.classList.toggle("hidden", !isSpamSelected);
+}
+
 function initializeElements(): void {
   // Cache all DOM element references with proper type assertions
   elements.reportEmailButton = document.getElementById("reportEmailButton");
@@ -81,14 +88,16 @@ function initializeElements(): void {
   elements.reportInProgress = document.getElementById("reportInProgress");
   elements.reportSuccess = document.getElementById("reportingSuccess");
   elements.reportError = document.getElementById("reportingError");
-  elements.reportErrorMessage = document.getElementById("reportingErrorMessage");
+  elements.reportErrorMessage = document.getElementById(
+    "reportingErrorMessage"
+  );
   elements.moveToJunkButton = document.getElementById("moveToJunkButton");
   elements.reportMessageTypeGroup = document.getElementById(
     "reportMessageTypeGroup"
-  ) as unknown as { value: string } | null;
-  elements.additionalInfoArea = document.getElementById("additionalInfo") as unknown as {
-    value: string;
-  } | null;
+  ) as (HTMLElement & { value: string }) | null;
+  elements.additionalInfoArea = document.getElementById("additionalInfo") as
+    | (HTMLElement & { value: string })
+    | null;
   elements.sideloadMsg = document.getElementById("sideload-msg");
   elements.appBody = document.getElementById("app-body");
 
@@ -115,15 +124,20 @@ function initializeElements(): void {
  */
 function updateUIState(state: UIState, errorMessage: string = ""): void {
   // Hides all reporting result elements
-  const results = [elements.reportInProgress, elements.reportSuccess, elements.reportError];
+  const results = [
+    elements.reportInProgress, elements.reportSuccess, elements.reportError
+  ];
   results.forEach((el) => el?.classList.add("hidden"));
+
+  elements.reportEmailButton?.removeAttribute("disabled");
 
   // Show the appropriate element based on the current state
   switch (state) {
     case UIState.REPORTING:
       elements.reportEmailButton?.setAttribute("disabled", "true");
       if (elements.reportEmailTooltip) {
-        elements.reportEmailTooltip.innerText = "Report in progress, please wait...";
+        elements.reportEmailTooltip.innerText =
+          "Report in progress, please wait...";
       }
       elements.reportInProgress?.classList.remove("hidden");
       break;
@@ -136,22 +150,32 @@ function updateUIState(state: UIState, errorMessage: string = ""): void {
       elements.moveToJunkButton?.classList.remove("hidden");
       break;
     case UIState.ERROR:
-      elements.reportEmailButton?.setAttribute("disabled", "false");
       if (elements.reportEmailTooltip) {
-        elements.reportEmailTooltip.innerText = "Click to retry reporting the email";
+        elements.reportEmailTooltip.innerText =
+          "Click to retry reporting the email";
       }
       elements.reportError?.classList.remove("hidden");
       if (elements.reportErrorMessage) {
-        elements.reportErrorMessage.innerText = errorMessage || "Something went wrong";
+        elements.reportErrorMessage.innerText =
+          errorMessage || "Something went wrong";
       }
       break;
     case UIState.IDLE:
       // Everything hidden is the default idle state
       if (elements.reportEmailTooltip) {
-        elements.reportEmailTooltip.innerText = "Report this email as a phishing or a spam message";
+        elements.reportEmailTooltip.innerText =
+          "Report this email as a phishing or a spam message";
       }
       break;
   }
+
+  if (state !== UIState.SUCCESS) {
+    updateActionButtons();
+  }
+}
+
+function handleReportMessageTypeChange(): void {
+  updateActionButtons();
 }
 
 // Initialize when Office is ready.
@@ -163,11 +187,19 @@ void (async () => {
     if (elements.sideloadMsg) elements.sideloadMsg.style.display = "none";
     if (elements.appBody) elements.appBody.style.display = "flex";
 
+    
     if (elements.reportEmailButton) {
       elements.reportEmailButton.addEventListener("click", handleReportClick);
     }
     if (elements.moveToJunkButton) {
-      elements.moveToJunkButton.addEventListener("click", handleMoveToJunkClick);
+      elements.moveToJunkButton.addEventListener(
+        "click", handleMoveToJunkClick
+      );
+    }
+    if (elements.reportMessageTypeGroup) {
+      elements.reportMessageTypeGroup.addEventListener(
+        "change", handleReportMessageTypeChange
+      );
     }
 
     // Initialize MSAL.
@@ -192,13 +224,17 @@ async function handleReportClick(): Promise<void> {
     updateUIState(UIState.REPORTING);
 
     // Get dependencies
-    const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
+    const accessToken: string = await accountManager.ssoGetAccessToken(
+      ["mail.read", "mail.send"]
+    );
     const messageId = await officeMailService.getRestItemId();
     const user = await getUserData();
 
     // Create services
     const graphClient = new GraphClient(accessToken);
-    const phishingService = new PhishingReportService(graphClient, reportPhishApiUrl as string);
+    const phishingService = new PhishingReportService(
+      graphClient, reportPhishApiUrl as string
+    );
 
     // Get report details from UI
     const reportType = elements.reportMessageTypeGroup?.value ?? "unknown";
@@ -230,11 +266,15 @@ async function handleReportClick(): Promise<void> {
 
 async function handleMoveToJunkClick(): Promise<void> {
   try {
-    const accessToken: string = await accountManager.ssoGetAccessToken(["mail.read", "mail.send"]);
+    const accessToken: string = await accountManager.ssoGetAccessToken([
+      "mail.read", "mail.send"
+    ]);
     const messageId = await officeMailService.getRestItemId();
 
     const graphClient = new GraphClient(accessToken);
-    const phishingService = new PhishingReportService(graphClient, reportPhishApiUrl as string);
+    const phishingService = new PhishingReportService(
+      graphClient, reportPhishApiUrl as string
+    );
 
     await phishingService.moveToJunk(messageId);
     Office.context.ui.closeContainer();

@@ -1,4 +1,5 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under
+the MIT License. -->
 
 <!doctype html>
 <html lang="en-us">
@@ -26,8 +27,7 @@
           rel="noreferrer noopener"
           target="_blank"
           href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing"
-          >sideload</a
-        >
+        >sideload</a>
         your add-in to see app body.
       </h2>
     </section>
@@ -41,7 +41,6 @@
       >
         <fluent-radio value="phishing">Phishing</fluent-radio>
         <fluent-radio value="spam">Spam</fluent-radio>
-        <fluent-radio value="other">Other</fluent-radio>
       </fluent-radio-group>
       <fluent-text-area
         id="additionalInfo"
@@ -62,11 +61,17 @@
         anchor="reportEmailButton"
         class="ms-font-s"
       ></fluent-tooltip>
-      <div id="reportInProgress" class="reportingResult hidden" aria-live="polite" role="status">
+      <div
+        id="reportInProgress" class="reportingResult hidden"
+        aria-live="polite" role="status"
+      >
         <fluent-progress-ring></fluent-progress-ring>
         <label>Reporting email...</label>
       </div>
-      <div class="reportingResult hidden" id="reportingSuccess" aria-live="polite" role="status">
+      <div
+        class="reportingResult hidden" id="reportingSuccess" aria-live="polite"
+        role="status"
+      >
         <!-- Show a green checkmark when the email has been successfully reported -->
         <svg
           width="20"
@@ -82,7 +87,10 @@
         </svg>
         <label>Email has been reported to Service Desk.</label>
       </div>
-      <div class="reportingResult hidden" id="reportingError" aria-live="assertive" role="alert">
+      <div
+        class="reportingResult hidden" id="reportingError" aria-live="assertive"
+        role="alert"
+      >
         <!-- Show a red X when the email could not be reported -->
         <svg
           width="20"
@@ -109,9 +117,11 @@
       >
         Mark as junk and close pane
       </fluent-button>
-      <fluent-tooltip id="moveToJunkTooltip" anchor="moveToJunkButton" class="ms-font-s"
-        >Move the email to your Junk Email folder and close this pane</fluent-tooltip
+      <fluent-tooltip
+        id="moveToJunkTooltip" anchor="moveToJunkButton" class="ms-font-s"
       >
+        Move the email to your Junk Email folder and close this pane
+      </fluent-tooltip>
     </main>
   </body>
 </html>
