@@ -23,8 +23,8 @@ export interface PhishingReportResult {
 /**
  * Service for handling phishing email reports
  * Encapsulates the business logic for reporting and managing suspicious emails:
- * - construct a comment to attach to the forwarded suspicious email based on the
- *   user's category selection and optional text input
+ * - construct a comment to attach to the forwarded suspicious email based on
+ *   the user's category selection and optional text input
  * - forward the reported email
  * - log the report in Team App
  * - move the reported email to junk
@@ -46,8 +46,11 @@ export class PhishingReportService {
    * @param additionalInfo - Optional additional details from the user
    * @returns Formatted comment string
    */
-  buildForwardComment(displayName: string, reportType: string, additionalInfo?: string): string {
-    const baseComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in.`;
+  buildForwardComment(
+    displayName: string, reportType: string, additionalInfo?: string
+  ): string {
+    const baseComment =
+      `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in.`;
 
     if (additionalInfo && additionalInfo.trim() !== "") {
       return `${baseComment}\n\nAdditional details: ${additionalInfo}`;
@@ -61,7 +64,9 @@ export class PhishingReportService {
    * @param employeeEmail - Email address of the employee reporting
    * @param message - The message being reported
    */
-  async logPhishingReport(employeeEmail: string, message: Message): Promise<void> {
+  async logPhishingReport(
+    employeeEmail: string, message: Message
+  ): Promise<void> {
     try {
       const response = await fetch(this.reportApiUrl, {
         method: "POST",
@@ -75,7 +80,9 @@ export class PhishingReportService {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to log report: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to log report: ${response.status} ${response.statusText}`
+        );
       }
     } catch (error) {
       // Log but don't fail the entire operation if backend logging fails
@@ -88,7 +95,9 @@ export class PhishingReportService {
    * @param options - Configuration for the phishing report
    * @returns Result indicating success or failure with error details
    */
-  async reportPhishing(options: ReportPhishingOptions): Promise<PhishingReportResult> {
+  async reportPhishing(
+    options: ReportPhishingOptions
+  ): Promise<PhishingReportResult> {
     try {
       // Get the original message content
       const messageOptions = [
@@ -128,7 +137,8 @@ export class PhishingReportService {
 
       return { success: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
       console.error("Failed to report phishing email:", errorMessage);
 
       return {
