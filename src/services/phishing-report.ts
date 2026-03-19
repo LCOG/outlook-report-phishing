@@ -63,9 +63,10 @@ export class PhishingReportService {
    * Log a phishing report to the Team App backend API
    * @param employeeEmail - Email address of the employee reporting
    * @param message - The message being reported
+   * @param additionalInfo - Optional additional details from the user
    */
   async logPhishingReport(
-    employeeEmail: string, message: Message
+    employeeEmail: string, message: Message, additionalInfo?: string
   ): Promise<void> {
     try {
       const response = await fetch(this.reportApiUrl, {
@@ -76,6 +77,7 @@ export class PhishingReportService {
         body: JSON.stringify({
           employee_email: employeeEmail.toLowerCase(),
           email_message: message ?? "No message",
+          additional_info: additionalInfo ?? "",
         }),
       });
 
@@ -110,7 +112,9 @@ export class PhishingReportService {
       );
 
       // Log to Team App API (non-blocking - won't fail the operation)
-      await this.logPhishingReport(options.user.mail ?? "", message);
+      await this.logPhishingReport(
+        options.user.mail ?? "", message, options.additionalInfo
+      );
 
       // Build the forward comment
       const forwardComment = this.buildForwardComment(
