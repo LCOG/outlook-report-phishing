@@ -267,7 +267,7 @@ async function handleReportClick(): Promise<void> {
 async function handleMoveToJunkClick(): Promise<void> {
   try {
     const accessToken: string = await accountManager.ssoGetAccessToken([
-      "mail.read", "mail.send"
+      "mail.readwrite", "mail.send"
     ]);
     const messageId = await officeMailService.getRestItemId();
 
