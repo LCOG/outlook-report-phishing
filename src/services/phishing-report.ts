@@ -123,8 +123,8 @@ export class PhishingReportService {
         ],
       };
 
-      // Forward the message to service desk
-      await this.graphClient.forwardMessage(options.messageId, forwardBody);
+      // TODO: Optionally forward the message to service desk
+      // await this.graphClient.forwardMessage(options.messageId, forwardBody);
 
       return { success: true };
     } catch (error) {
