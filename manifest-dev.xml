@@ -4,8 +4,8 @@
   <Version>1.0.1</Version>
   <ProviderName>Lane Council of Governments</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="LCOG Report Phish (DEV)"/>
-  <Description DefaultValue="Report phishing emails to LCOG IT"/>
+  <DisplayName DefaultValue="Report Phish (DEV)"/>
+  <Description DefaultValue="Report a phishing email"/>
   <IconUrl DefaultValue="https://localhost:3000/assets/rp-icon-retouch-80.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/rp-icon-retouch-256.png"/>
   <SupportUrl DefaultValue="https://www.lcog-or.gov/intranet/page/info-web-security"/>
@@ -77,13 +77,18 @@
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GroupLabel" DefaultValue="LCOG Report Phish"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Show task pane"/>
-        <bt:String id="ActionButton.Label" DefaultValue="Perform an action"/>
+        <!-- Group label visible on the ribbon -->
+        <bt:String id="GroupLabel" DefaultValue="Report Phish (DEV)"/>
+        <!-- Main button label on the ribbon -->
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Report Phish (DEV)"/>
+        <!-- Secondary action button (if you use one) -->
+        <bt:String id="ActionButton.Label" DefaultValue="Submit report"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Opens a pane displaying all available properties."/>
-        <bt:String id="ActionButton.Tooltip" DefaultValue="Perform an action when clicked."/>
+        <!-- Tooltip for the task pane button -->
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Report a suspected phishing message. We’ll securely send this email and its headers to the security team for review."/>
+        <!-- Tooltip for the action button (if present) -->
+        <bt:String id="ActionButton.Tooltip" DefaultValue="Submit the phishing report."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
