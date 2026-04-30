@@ -72,6 +72,7 @@
         <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-16.png"/>
         <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-32.png"/>
         <bt:Image id="Icon.25x25" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-32.png"/>
+        <bt:Image id="Icon.48x48" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-80.png"/>
         <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/rp-icon-retouch-80.png"/>
       </bt:Images>
       <bt:Urls>
@@ -110,6 +111,12 @@
                     <bt:Image size="25" scale="1" resid="Icon.25x25"/>
                     <bt:Image size="25" scale="2" resid="Icon.25x25"/>
                     <bt:Image size="25" scale="3" resid="Icon.25x25"/>
+                    <bt:Image size="32" scale="1" resid="Icon.32x32"/>
+                    <bt:Image size="32" scale="2" resid="Icon.32x32"/>
+                    <bt:Image size="32" scale="3" resid="Icon.32x32"/>
+                    <bt:Image size="48" scale="1" resid="Icon.48x48"/>
+                    <bt:Image size="48" scale="2" resid="Icon.48x48"/>
+                    <bt:Image size="48" scale="3" resid="Icon.48x48"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <SourceLocation resid="Taskpane.Url"/>
