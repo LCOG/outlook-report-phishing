@@ -10,7 +10,7 @@
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/rp-icon-retouch-256.png"/>
   <SupportUrl DefaultValue="https://www.lcog-or.gov/intranet/page/info-web-security"/>
   <AppDomains>
-    <AppDomain>https://www.lcog-or.gov</AppDomain>
+    <AppDomain>https://localhost:3000</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Mailbox"/>
