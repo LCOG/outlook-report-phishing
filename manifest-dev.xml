@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
   <Id>33f1ce9e-8a9f-4164-8d4b-16d52404404d</Id>
-  <Version>1.1.1</Version>
+  <Version>1.1.2</Version>
   <ProviderName>Lane Council of Governments</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Report Phish (DEV)"/>
@@ -124,6 +124,30 @@
               </OfficeTab>
             </ExtensionPoint>
           </DesktopFormFactor>
+          <MobileFormFactor>
+            <ExtensionPoint xsi:type="MobileMessageReadCommandSurface">
+              <Group id="msgReadGroupMobile">
+                <Label resid="GroupLabel"/>
+                <Control xsi:type="MobileButton" id="msgReadOpenPaneButtonMobile">
+                  <Label resid="TaskpaneButton.Label"/>
+                  <Icon xsi:type="bt:MobileIconList">
+                    <bt:Image size="25" scale="1" resid="Icon.16x16"/>
+                    <bt:Image size="25" scale="2" resid="Icon.16x16"/>
+                    <bt:Image size="25" scale="3" resid="Icon.16x16"/>
+                    <bt:Image size="32" scale="1" resid="Icon.32x32"/>
+                    <bt:Image size="32" scale="2" resid="Icon.32x32"/>
+                    <bt:Image size="32" scale="3" resid="Icon.32x32"/>
+                    <bt:Image size="48" scale="1" resid="Icon.80x80"/>
+                    <bt:Image size="48" scale="2" resid="Icon.80x80"/>
+                    <bt:Image size="48" scale="3" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+              </Group>
+            </ExtensionPoint>
+          </MobileFormFactor>
         </Host>
       </Hosts>
       <Resources>
