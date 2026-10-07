@@ -1,5 +1,5 @@
 import type { GraphClient } from "./graph-client";
-import type { Message, User } from "@microsoft/microsoft-graph-types";
+import type { Attachment, Message, User } from "@microsoft/microsoft-graph-types";
 
 /**
  * Options for reporting a phishing email
@@ -46,11 +46,8 @@ export class PhishingReportService {
    * @param additionalInfo - Optional additional details from the user
    * @returns Formatted comment string
    */
-  buildForwardComment(
-    displayName: string, reportType: string, additionalInfo?: string
-  ): string {
-    const baseComment =
-      `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in.`;
+  buildForwardComment(displayName: string, reportType: string, additionalInfo?: string): string {
+    const baseComment = `${displayName} forwarded a suspicious email (${reportType}) via the Report Phish add-in.`;
 
     if (additionalInfo && additionalInfo.trim() !== "") {
       return `${baseComment}\n\nAdditional details: ${additionalInfo}`;
@@ -66,7 +63,10 @@ export class PhishingReportService {
    * @param additionalInfo - Optional additional details from the user
    */
   async logPhishingReport(
-    employeeEmail: string, message: Message, additionalInfo?: string
+    employeeEmail: string,
+    message: Message,
+    additionalInfo?: string,
+    attachments?: Attachment[]
   ): Promise<void> {
     try {
       const response = await fetch(this.reportApiUrl, {
@@ -78,6 +78,7 @@ export class PhishingReportService {
           employee_email: employeeEmail.toLowerCase(),
           email_message: message ?? "No message",
           additional_info: additionalInfo ?? "",
+          attachments: attachments ?? [],
         }),
       });
 
@@ -110,10 +111,15 @@ export class PhishingReportService {
       const message = await this.graphClient.getMessage(
         options.messageId, "?$select=" + messageOptions.join(",")
       );
+      // Get any attachments
+      const attachments = await this.graphClient.getMessageAttachments(options.messageId);
 
       // Log to Team App API (non-blocking - won't fail the operation)
       await this.logPhishingReport(
-        options.user.mail ?? "", message, options.additionalInfo
+        options.user.mail ?? "",
+        message,
+        options.additionalInfo,
+        attachments
       );
 
       // Build the forward comment

@@ -1,4 +1,4 @@
-import type { User, Message } from "@microsoft/microsoft-graph-types";
+import type { Attachment, User, Message } from "@microsoft/microsoft-graph-types";
 
 /**
  * Interface for Graph API error responses.
@@ -108,6 +108,13 @@ export class GraphClient {
    */
   async getMessage(id: string, queryParams: string = ""): Promise<Message> {
     return this.get<Message>(`/me/messages/${id}${queryParams}`);
+  }
+
+  /**
+   * Gets the attachments of a specific message by ID.
+   */
+  async getMessageAttachments(id: string): Promise<Attachment[]> {
+    return this.get<Attachment[]>(`/me/messages/${id}/attachments`);
   }
 
   /**
