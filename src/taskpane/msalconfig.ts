@@ -10,8 +10,14 @@ import { createLocalUrl } from "./util";
 
 // Entra app registration client IDs for development and production
 export const clientIdDev = "81fbcf38-230e-421d-b5fd-35ad67e8db7d";
+export const clientIdStag = "your-staging-client-id-here"; // Replace with actual staging client ID
 export const clientIdProd = "7ad80a52-3622-4bbd-ae71-fc5344c525a3";
-export const clientId = process.env.NODE_ENV === "production" ? clientIdProd : clientIdDev;
+export const clientId =
+  process.env.NODE_ENV === "production"
+    ? clientIdProd
+    : process.env.NODE_ENV === "staging"
+      ? clientIdStag
+      : clientIdDev;
 
 export const msalConfig: Configuration = {
   auth: {

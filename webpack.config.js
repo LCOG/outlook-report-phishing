@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 
+const path = require("path");
 const devCerts = require("office-addin-dev-certs");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -11,7 +12,9 @@ async function getHttpsOptions() {
 }
 
 module.exports = async (env, options) => {
-  const dev = options.mode === "development";
+  const isDevelopment = options.mode === "development";
+  const isStaging = Boolean(env && env.staging);
+  const buildTarget = isDevelopment ? "development" : isStaging ? "staging" : "production";
   const config = {
     devtool: "source-map",
     entry: {
@@ -20,10 +23,14 @@ module.exports = async (env, options) => {
       dialog: ["./src/taskpane/fallback/fallbackauthdialog.ts"],
     },
     output: {
+      path: path.resolve(__dirname, "dist", buildTarget),
       clean: true,
     },
     resolve: {
       extensions: [".ts", ".html", ".js"],
+    },
+    optimization: {
+      nodeEnv: false,
     },
     module: {
       rules: [
@@ -74,13 +81,21 @@ module.exports = async (env, options) => {
             to: "assets/[name][ext][query]",
           },
           {
-            from: dev ? "manifest-dev.xml" : "manifest-prod.xml",
+            from: isDevelopment
+              ? "manifest-dev.xml"
+              : isStaging
+                ? "manifest-stag.xml"
+                : "manifest-prod.xml",
             to: "manifest.xml",
           },
         ],
       }),
       new Dotenv({
-        path: dev ? ".env.development" : ".env.production",
+        path: isDevelopment
+          ? ".env.development"
+          : isStaging
+            ? ".env.staging"
+            : ".env.production",
       }),
     ],
     devServer: {
@@ -90,7 +105,7 @@ module.exports = async (env, options) => {
       server: {
         type: "https",
         options:
-          env.WEBPACK_BUILD || options.https !== undefined
+          env && env.WEBPACK_BUILD || options.https !== undefined
             ? options.https
             : await getHttpsOptions(),
       },

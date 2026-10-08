@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "webpack --mode production",
+    "build:stag": "webpack --mode production --env staging",
     "build:dev": "webpack --mode development",
     "dev-server": "webpack serve --mode development",
     "lint": "eslint .",
@@ -33,6 +34,7 @@
     "test:coverage": "vitest run --coverage",
     "validate": "office-addin-manifest validate manifest-dev.xml",
     "validate:dev": "office-addin-manifest validate manifest-dev.xml",
+    "validate:stag": "office-addin-manifest validate manifest-stag.xml",
     "validate:prod": "office-addin-manifest validate manifest-prod.xml",
     "watch": "webpack --mode development --watch",
     "prepare": "husky"

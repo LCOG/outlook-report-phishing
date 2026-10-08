@@ -53,25 +53,40 @@ localhost, webpack creates self-signed certificates when first running the
 development server. You should also see a prompt to allow installing them in the
 OS trust store.
 
-## Deploying to production
+## Deploying to staging and production
 
-Following the patterns in `.env.example`, create a file called `.env.production`
-and run `pnpm build`. This builds the production bundle in the `/dist`
-directory.
+Following the patterns in `.env.example`, create a file called `.env.staging`
+for staging and `.env.production` for production. Then run:
 
-To deploy the bundle to production, upload it to the `reportphish.lcog-or.gov`
+```sh
+# Build the staging bundle
+pnpm run build:stag
+
+# Build the production bundle
+pnpm build
+```
+
+This builds the bundle under `/dist/staging` for staging and `/dist/production`
+for production. For staging, webpack uses `manifest-stag.xml` and
+`.env.staging`; for production, it uses `manifest-prod.xml` and
+`.env.production`.
+
+To deploy the staging bundle, upload it to the `reportphish-staging.lcog-or.gov`
 S3 bucket. Then create an invalidation for the CloudFront distribution to ensure
-the new version is served.
+the new version is served. For production, upload the bundle to the
+`reportphish.lcog-or.gov` S3 bucket and invalidate the production distribution.
 
 ## Add-in manifest files
 
-The project has two manifest files: `manifest-dev.xml` and `manifest-prod.xml`.
-These are used for two separate custom app deployments in Microsoft 365 admin
-center. The development version is deployed to a limited set of users, and the
-production version to the entire organization.
+The project has three manifest files: `manifest-dev.xml`, `manifest-stag.xml`,
+and `manifest-prod.xml`. These are used for the development, staging, and
+production custom app deployments in Microsoft 365 admin center. The
+development version is deployed to a limited set of users, the staging version
+is used for pre-production validation, and the production version is deployed to
+the entire organization.
 
-Based on `NODE_ENV`, webpack copies the corresponding manifest file to the
-output bundle.
+Based on the selected build target, webpack copies the corresponding manifest
+file to the output bundle.
 
 When making changes to the manifest files, increment the version number and
 upload the updated manifest in the admin center.
