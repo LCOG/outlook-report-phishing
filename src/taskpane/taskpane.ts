@@ -3,34 +3,42 @@
  * MIT license. See LICENSE in the project root for license information.
  */
 
-import {
-  provideFluentDesignSystem,
-  fluentButton,
-  fluentDivider,
-  fluentRadio,
-  fluentRadioGroup,
-  fluentTextArea,
-  fluentTooltip,
-  fluentProgressRing,
-} from "@fluentui/web-components";
-
-import { AccountManager } from "./authConfig";
-import { GraphClient } from "../services/graph-client";
-import { OfficeMailService } from "../services/office-mail";
-import { PhishingReportService } from "../services/phishing-report";
 import { ensureOfficeReady } from "../utils/office-type-guards";
 
 import type { User } from "@microsoft/microsoft-graph-types";
 
-provideFluentDesignSystem().register(
-  fluentButton(),
-  fluentDivider(),
-  fluentRadio(),
-  fluentRadioGroup(),
-  fluentTextArea(),
-  fluentTooltip(),
-  fluentProgressRing()
-);
+type AuthManager = {
+  initialize(): Promise<void>;
+  ssoGetAccessToken(scopes: string[]): Promise<string>;
+};
+
+type MailService = {
+  getRestItemId(): Promise<string>;
+  displayDialog(url: string, options: { height: number; width: number }): Promise<any>;
+};
+
+async function initializeFluentUI(): Promise<void> {
+  const {
+    provideFluentDesignSystem,
+    fluentButton,
+    fluentDivider,
+    fluentRadio,
+    fluentRadioGroup,
+    fluentTextArea,
+    fluentTooltip,
+    fluentProgressRing,
+  } = await import("@fluentui/web-components");
+
+  provideFluentDesignSystem().register(
+    fluentButton(),
+    fluentDivider(),
+    fluentRadio(),
+    fluentRadioGroup(),
+    fluentTextArea(),
+    fluentTooltip(),
+    fluentProgressRing()
+  );
+}
 
 // Type definitions
 enum UIState {
@@ -71,8 +79,26 @@ const elements: UIElements = {
 
 const reportPhishApiUrl = process.env.API_URL;
 const forwardEmail = process.env.FORWARD_TO;
-const accountManager = new AccountManager();
-const officeMailService = new OfficeMailService();
+let accountManager: AuthManager | null = null;
+let officeMailService: MailService | null = null;
+
+async function getAccountManager(): Promise<AuthManager> {
+  if (!accountManager) {
+    const { AccountManager } = await import("./authConfig");
+    accountManager = new AccountManager();
+  }
+
+  return accountManager;
+}
+
+async function getOfficeMailService(): Promise<MailService> {
+  if (!officeMailService) {
+    const { OfficeMailService } = await import("../services/office-mail");
+    officeMailService = new OfficeMailService();
+  }
+
+  return officeMailService;
+}
 
 function updateActionButtons(): void {
   const isSpamSelected = elements.reportMessageTypeGroup?.value === "spam";
@@ -182,12 +208,12 @@ function handleReportMessageTypeChange(): void {
 void (async () => {
   try {
     await ensureOfficeReady();
+    await initializeFluentUI();
     initializeElements();
 
     if (elements.sideloadMsg) elements.sideloadMsg.style.display = "none";
     if (elements.appBody) elements.appBody.style.display = "flex";
 
-    
     if (elements.reportEmailButton) {
       elements.reportEmailButton.addEventListener("click", handleReportClick);
     }
@@ -203,7 +229,7 @@ void (async () => {
     }
 
     // Initialize MSAL.
-    await accountManager.initialize();
+    await (await getAccountManager()).initialize();
     updateUIState(UIState.IDLE);
   } catch (error) {
     console.error("Office initialization failed:", error);
@@ -214,7 +240,8 @@ void (async () => {
  * Gets the user's name and email
  */
 async function getUserData(): Promise<User> {
-  const accessToken = await accountManager.ssoGetAccessToken(["user.read"]);
+  const accessToken = await (await getAccountManager()).ssoGetAccessToken(["user.read"]);
+  const { GraphClient } = await import("../services/graph-client");
   const graphClient = new GraphClient(accessToken);
   return graphClient.getUser();
 }
@@ -223,14 +250,13 @@ async function handleReportClick(): Promise<void> {
   try {
     updateUIState(UIState.REPORTING);
 
-    // Get dependencies
-    const accessToken: string = await accountManager.ssoGetAccessToken(
-      ["mail.read", "mail.send"]
-    );
-    const messageId = await officeMailService.getRestItemId();
+    const manager = await getAccountManager();
+    const accessToken: string = await manager.ssoGetAccessToken(["mail.read", "mail.send"]);
+    const messageId = await (await getOfficeMailService()).getRestItemId();
     const user = await getUserData();
 
-    // Create services
+    const { GraphClient } = await import("../services/graph-client");
+    const { PhishingReportService } = await import("../services/phishing-report");
     const graphClient = new GraphClient(accessToken);
     const phishingService = new PhishingReportService(
       graphClient, reportPhishApiUrl as string
@@ -266,11 +292,14 @@ async function handleReportClick(): Promise<void> {
 
 async function handleMoveToJunkClick(): Promise<void> {
   try {
-    const accessToken: string = await accountManager.ssoGetAccessToken([
+    const manager = await getAccountManager();
+    const accessToken: string = await manager.ssoGetAccessToken([
       "mail.readwrite", "mail.send"
     ]);
-    const messageId = await officeMailService.getRestItemId();
+    const messageId = await (await getOfficeMailService()).getRestItemId();
 
+    const { GraphClient } = await import("../services/graph-client");
+    const { PhishingReportService } = await import("../services/phishing-report");
     const graphClient = new GraphClient(accessToken);
     const phishingService = new PhishingReportService(
       graphClient, reportPhishApiUrl as string
