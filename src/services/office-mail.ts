@@ -201,6 +201,30 @@ export class OfficeMailService {
   }
 
   /**
+   * Get the mailbox key for the current item when using a shared mailbox/folder.
+   * This is needed so Graph calls hit the shared mailbox instead of the user's default mailbox.
+   */
+  async getTargetMailbox(): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const item = this.item as any;
+      if (typeof item.getSharedPropertiesAsync !== "function") {
+        resolve(undefined);
+        return;
+      }
+
+      item.getSharedPropertiesAsync((result: Office.AsyncResult<Office.SharedProperties>) => {
+        if (isAsyncResultSuccess(result)) {
+          const targetMailbox = String(result.value?.targetMailbox ?? "").trim();
+          resolve(targetMailbox || undefined);
+          return;
+        }
+
+        resolve(undefined);
+      });
+    });
+  }
+
+  /**
    * Get all attachments for the current item
    */
   async getAttachments(): Promise<AttachmentDetails[]> {

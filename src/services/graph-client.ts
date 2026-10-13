@@ -31,10 +31,21 @@ export interface GraphResponse<T> {
 export class GraphClient {
   private readonly baseUrl = "https://graph.microsoft.com/v1.0";
 
-  constructor(private readonly accessToken: string) {
+  constructor(
+    private readonly accessToken: string,
+    private readonly targetMailbox?: string
+  ) {
     if (!accessToken) {
       throw new Error("Access token is required for GraphClient");
     }
+  }
+
+  private getMailboxScopePath(): string {
+    return this.targetMailbox ? `/users/${encodeURIComponent(this.targetMailbox)}` : "/me";
+  }
+
+  private getMessageEndpoint(id: string, queryParams: string = ""): string {
+    return `${this.getMailboxScopePath()}/messages/${encodeURIComponent(id)}${queryParams}`;
   }
 
   /**
@@ -107,27 +118,35 @@ export class GraphClient {
    * Gets a specific message by ID.
    */
   async getMessage(id: string, queryParams: string = ""): Promise<Message> {
-    return this.get<Message>(`/me/messages/${id}${queryParams}`);
+    return this.get<Message>(this.getMessageEndpoint(id, queryParams));
   }
 
   /**
    * Gets the attachments of a specific message by ID.
    */
   async getMessageAttachments(id: string): Promise<Attachment[]> {
-    return this.get<Attachment[]>(`/me/messages/${id}/attachments`);
+    return this.get<Attachment[]>(
+      `${this.getMailboxScopePath()}/messages/${encodeURIComponent(id)}/attachments`
+    );
   }
 
   /**
    * Forwards a message.
    */
   async forwardMessage(id: string, forwardData: unknown): Promise<void> {
-    await this.post<void>(`/me/messages/${id}/forward`, forwardData);
+    await this.post<void>(
+      `${this.getMailboxScopePath()}/messages/${encodeURIComponent(id)}/forward`,
+      forwardData
+    );
   }
 
   /**
    * Moves a message to another folder.
    */
   async moveMessage(id: string, destinationId: string): Promise<Message> {
-    return this.post<Message>(`/me/messages/${id}/move`, { destinationId });
+    return this.post<Message>(
+      `${this.getMailboxScopePath()}/messages/${encodeURIComponent(id)}/move`,
+      { destinationId }
+    );
   }
 }

@@ -14,6 +14,7 @@ type AuthManager = {
 
 type MailService = {
   getRestItemId(): Promise<string>;
+  getTargetMailbox(): Promise<string | undefined>;
   displayDialog(url: string, options: { height: number; width: number }): Promise<any>;
 };
 
@@ -252,12 +253,14 @@ async function handleReportClick(): Promise<void> {
 
     const manager = await getAccountManager();
     const accessToken: string = await manager.ssoGetAccessToken(["mail.read", "mail.send"]);
-    const messageId = await (await getOfficeMailService()).getRestItemId();
+    const mailService = await getOfficeMailService();
+    const messageId = await mailService.getRestItemId();
+    const targetMailbox = await mailService.getTargetMailbox();
     const user = await getUserData();
 
     const { GraphClient } = await import("../services/graph-client");
     const { PhishingReportService } = await import("../services/phishing-report");
-    const graphClient = new GraphClient(accessToken);
+    const graphClient = new GraphClient(accessToken, targetMailbox);
     const phishingService = new PhishingReportService(
       graphClient, reportPhishApiUrl as string
     );
@@ -296,11 +299,13 @@ async function handleMoveToJunkClick(): Promise<void> {
     const accessToken: string = await manager.ssoGetAccessToken([
       "mail.readwrite", "mail.send"
     ]);
-    const messageId = await (await getOfficeMailService()).getRestItemId();
+    const mailService = await getOfficeMailService();
+    const messageId = await mailService.getRestItemId();
+    const targetMailbox = await mailService.getTargetMailbox();
 
     const { GraphClient } = await import("../services/graph-client");
     const { PhishingReportService } = await import("../services/phishing-report");
-    const graphClient = new GraphClient(accessToken);
+    const graphClient = new GraphClient(accessToken, targetMailbox);
     const phishingService = new PhishingReportService(
       graphClient, reportPhishApiUrl as string
     );
