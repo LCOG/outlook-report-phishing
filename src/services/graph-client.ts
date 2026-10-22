@@ -125,9 +125,9 @@ export class GraphClient {
    * Gets the attachments of a specific message by ID.
    */
   async getMessageAttachments(id: string): Promise<Attachment[]> {
-    return this.get<Attachment[]>(
+    return this.get<{ value: Attachment[] }>(
       `${this.getMailboxScopePath()}/messages/${encodeURIComponent(id)}/attachments`
-    );
+    ).then((response) => response.value);
   }
 
   /**
