@@ -7,7 +7,7 @@ import { createStandardPublicClientApplication } from "@azure/msal-browser";
 
 import { ensureOfficeReady } from "../../utils/office-type-guards";
 import { getTokenRequest } from "../msalcommon";
-import { defaultScopes, msalConfig } from "../msalconfig";
+import { defaultScopes, getMsalConfig } from "../msalconfig";
 import { createLocalUrl } from "../util";
 
 import type { AuthDialogResult } from "../authConfig";
@@ -38,7 +38,7 @@ async function returnResult(
 
 export async function initializeMsal(): Promise<void> {
   // Use standard Public Client instead of nested because this is a fallback path when nested app authentication isn't available.
-  const publicClientApp = await createStandardPublicClientApplication(msalConfig);
+  const publicClientApp = await createStandardPublicClientApplication(await getMsalConfig());
   try {
     if (getQueryParameter("logout") === "1") {
       await publicClientApp.logoutRedirect({

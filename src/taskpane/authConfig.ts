@@ -11,7 +11,7 @@ import {
 } from "@azure/msal-browser";
 
 import { getTokenRequest } from "./msalcommon";
-import { msalConfig } from "./msalconfig";
+import { getMsalConfig } from "./msalconfig";
 import { createLocalUrl } from "./util";
 import { OfficeMailService } from "../services/office-mail";
 import { ensureOfficeReady } from "../utils/office-type-guards";
@@ -53,7 +53,7 @@ export class AccountManager {
     await ensureOfficeReady();
 
     // If auth is not working, enable debug logging to help diagnose.
-    this.pca = await createNestablePublicClientApplication(msalConfig);
+    this.pca = await createNestablePublicClientApplication(await getMsalConfig());
 
     // If Office does not support Nested App Auth provide a sign-out button since the user selects account
     if (!this.isNestedAppAuthSupported() && this.pca.getActiveAccount() !== null) {

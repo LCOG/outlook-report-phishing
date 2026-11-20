@@ -11,7 +11,7 @@ import {
   type PopupRequest,
 } from "@azure/msal-browser";
 
-import { msalConfig } from "./msalconfig";
+import { getMsalConfig } from "./msalconfig";
 
 /**
  * Gets a token request for a given account context.
@@ -45,6 +45,6 @@ let _publicClientApp: IPublicClientApplication | undefined;
  * @returns The nested public client application.
  */
 export async function ensurePublicClient(): Promise<IPublicClientApplication> {
-  _publicClientApp ??= await createNestablePublicClientApplication(msalConfig);
+  _publicClientApp ??= await createNestablePublicClientApplication(await getMsalConfig());
   return _publicClientApp;
 }
